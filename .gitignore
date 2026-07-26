@@ -1,0 +1,22 @@
+# Backend
+cms-assignment-backend/vendor/
+cms-assignment-backend/node_modules/
+cms-assignment-backend/storage/*.key
+cms-assignment-backend/.env
+
+# Frontend
+cms-assignment-frontend/node_modules/
+cms-assignment-frontend/dist/
+cms-assignment-frontend/.env
+
+# Mobile
+cms-assignment-mobile-app/node_modules/
+cms-assignment-mobile-app/android/.gradle/
+cms-assignment-mobile-app/ios/build/
+
+# IDE
+.vscode/
+.idea/
+
+# Logs
+*.log
