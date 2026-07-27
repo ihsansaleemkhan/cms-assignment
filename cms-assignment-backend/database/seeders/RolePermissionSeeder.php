@@ -2,8 +2,9 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Spatie\Permission\Models\Role;
+use Spatie\Permission\Models\Permission;
 
 class RolePermissionSeeder extends Seeder
 {
@@ -12,6 +13,56 @@ class RolePermissionSeeder extends Seeder
      */
     public function run(): void
     {
-        //
+         app()[\Spatie\Permission\PermissionRegistrar::class]
+            ->forgetCachedPermissions();
+
+        $permissions = [
+
+            'dashboard.view',
+
+            'menu.view',
+            'menu.create',
+            'menu.edit',
+            'menu.delete',
+
+            'page.view',
+            'page.create',
+            'page.edit',
+            'page.delete',
+
+            'user.view',
+            'user.create',
+            'user.edit',
+            'user.delete',
+        ];
+
+        foreach ($permissions as $permission) {
+            Permission::firstOrCreate([
+                'name' => $permission,
+                'guard_name' => 'web'
+            ]);
+        }
+
+        $admin = Role::firstOrCreate([
+            'name' => 'Admin',
+            'guard_name' => 'web'
+        ]);
+
+        $editor = Role::firstOrCreate([
+            'name' => 'Editor',
+            'guard_name' => 'web'
+        ]);
+
+        $admin->syncPermissions(Permission::all());
+
+        $editor->syncPermissions([
+            'dashboard.view',
+            'menu.view',
+            'menu.create',
+            'menu.edit',
+            'page.view',
+            'page.create',
+            'page.edit'
+        ]);
     }
 }
