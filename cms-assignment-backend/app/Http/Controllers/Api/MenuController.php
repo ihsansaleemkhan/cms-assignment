@@ -3,47 +3,68 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
+use App\Http\Requests\StoreMenuRequest;
+use App\Http\Requests\UpdateMenuRequest;
+use App\Http\Resources\MenuResource;
+use App\Models\Menu;
 
 class MenuController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * GET /menus
      */
     public function index()
     {
-        //
+        $menus = Menu::with('children')
+            ->orderBy('sort_order')
+            ->paginate(10);
+
+        return MenuResource::collection($menus);
     }
 
     /**
-     * Store a newly created resource in storage.
+     * POST /menus
      */
-    public function store(Request $request)
+    public function store(StoreMenuRequest $request)
     {
-        //
+        $menu = Menu::create($request->validated());
+
+        return (new MenuResource($menu))
+            ->response()
+            ->setStatusCode(201);
     }
 
     /**
-     * Display the specified resource.
+     * GET /menus/{menu}
      */
-    public function show(string $id)
+    public function show(Menu $menu)
     {
-        //
+        $menu->load('children');
+
+        return new MenuResource($menu);
     }
 
     /**
-     * Update the specified resource in storage.
+     * PUT /menus/{menu}
      */
-    public function update(Request $request, string $id)
+    public function update(UpdateMenuRequest $request, Menu $menu)
     {
-        //
+        $menu->update($request->validated());
+
+        return new MenuResource(
+            $menu->fresh()->load('children')
+        );
     }
 
     /**
-     * Remove the specified resource from storage.
+     * DELETE /menus/{menu}
      */
-    public function destroy(string $id)
+    public function destroy(Menu $menu)
     {
-        //
+        $menu->delete();
+
+        return response()->json([
+            'message' => 'Menu deleted successfully.'
+        ], 200);
     }
 }

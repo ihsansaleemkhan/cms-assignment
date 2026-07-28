@@ -7,18 +7,25 @@ use Illuminate\Http\Resources\Json\JsonResource;
 
 class MenuResource extends JsonResource
 {
-    /**
-     * Transform the resource into an array.
-     *
-     * @return array<string, mixed>
-     */
     public function toArray(Request $request): array
     {
         return [
+
             'id' => $this->id,
-            'name' => $this->name,
+
             'parent_id' => $this->parent_id,
+
+            'title' => $this->title,
+
+            'slug' => $this->slug,
+
             'sort_order' => $this->sort_order,
+
+            'is_active' => $this->is_active,
+
+            'created_at' => $this->created_at,
+
+            'updated_at' => $this->updated_at,
 
             'children' => MenuResource::collection(
                 $this->whenLoaded('children')

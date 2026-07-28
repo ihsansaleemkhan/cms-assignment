@@ -15,9 +15,15 @@ class StoreMenuRequest extends FormRequest
     {
         return [
 
-            'name' => 'required|string|max:255',
             'parent_id' => 'nullable|exists:menus,id',
+
+            'title' => 'required|string|max:255',
+
+            'slug' => 'required|string|max:255|unique:menus,slug',
+
             'sort_order' => 'nullable|integer|min:0',
+
+            'is_active' => 'nullable|boolean',
         ];
     }
 
@@ -25,8 +31,11 @@ class StoreMenuRequest extends FormRequest
     {
         return [
 
-            'name.required' => 'Menu name is required.',
-            'parent_id.exists' => 'Parent menu does not exist.',
+            'title.required' => 'Menu title is required.',
+
+            'slug.required' => 'Slug is required.',
+
+            'parent_id.exists' => 'Selected parent menu does not exist.',
         ];
     }
 }
