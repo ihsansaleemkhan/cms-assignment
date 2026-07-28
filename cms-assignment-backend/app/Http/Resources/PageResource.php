@@ -20,7 +20,7 @@ class PageResource extends JsonResource
             'title' => $this->title,
             'slug' => $this->slug,
             'body' => $this->body,
-            'cover_image' => $this->cover_image,
+            'cover_image' => $this->cover_image? asset('storage/' . $this->cover_image): null,
             'status' => $this->status,
             'publish_date' => $this->publish_date,
             

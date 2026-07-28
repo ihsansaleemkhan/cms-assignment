@@ -13,7 +13,11 @@ class UpdatePageRequest extends FormRequest
 
     public function rules(): array
     {
-        $pageId = $this->route('page');
+        $page = $this->route('page');
+
+        $pageId = $page instanceof \App\Models\Page
+            ? $page->id
+            : $page;
 
         return [
 
