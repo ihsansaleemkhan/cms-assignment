@@ -8,10 +8,11 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class User extends Authenticatable
 {
-    use HasApiTokens, HasRoles, Notifiable, SoftDeletes;
+    use HasApiTokens, HasRoles, Notifiable, SoftDeletes, HasFactory;
 
     protected $guard_name = 'web';
 
