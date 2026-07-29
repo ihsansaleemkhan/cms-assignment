@@ -8,9 +8,21 @@ use App\Http\Requests\UpdateUserRequest;
 use App\Http\Resources\UserResource;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
 
-class UserController extends Controller
+class UserController extends Controller implements HasMiddleware
 {
+    public static function middleware(): array
+    {
+        return [
+            new Middleware('permission:user.view', only: ['index', 'show']),
+            new Middleware('permission:user.create', only: ['store']),
+            new Middleware('permission:user.edit', only: ['update']),
+            new Middleware('permission:user.delete', only: ['destroy']),
+        ];
+    }
+ 
     /**
      * GET /users
      */

@@ -10,9 +10,21 @@ use App\Models\Page;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
 
-class PageController extends Controller
+class PageController extends Controller implements HasMiddleware
 {
+    public static function middleware(): array
+    {
+        return [
+            new Middleware('permission:page.view', only: ['index', 'show']),
+            new Middleware('permission:page.create', only: ['store']),
+            new Middleware('permission:page.edit', only: ['update']),
+            new Middleware('permission:page.delete', only: ['destroy']),
+        ];
+    }
+    
     /**
      * GET /pages
      */

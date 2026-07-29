@@ -9,6 +9,10 @@ use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Spatie\Permission\Middleware\PermissionMiddleware;
+use Spatie\Permission\Middleware\RoleMiddleware;
+use Spatie\Permission\Middleware\RoleOrPermissionMiddleware;
+use Spatie\Permission\Exceptions\UnauthorizedException;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -20,16 +24,22 @@ return Application::configure(basePath: dirname(__DIR__))
 
     ->withMiddleware(function (Middleware $middleware) {
 
-        $middleware->redirectGuestsTo(function (Request $request) {
+            $middleware->redirectGuestsTo(function (Request $request) {
 
-            if ($request->is('api/*')) {
-                return null;
-            }
+                if ($request->is('api/*')) {
+                    return null;
+                }
 
-            return route('login');
-        });
+                return route('login');
+            });
 
-    })
+            $middleware->alias([
+                'permission' => PermissionMiddleware::class,
+                'role' => RoleMiddleware::class,
+                'role_or_permission' => RoleOrPermissionMiddleware::class,
+            ]);
+
+        })
 
     ->withExceptions(function (Exceptions $exceptions) {
 
@@ -52,6 +62,17 @@ return Application::configure(basePath: dirname(__DIR__))
                 return response()->json([
                     'success' => false,
                     'message' => 'Forbidden.',
+                ], 403);
+            }
+
+        });
+
+        $exceptions->render(function (UnauthorizedException $e, Request $request) {
+
+            if ($request->is('api/*')) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'You do not have permission to perform this action.',
                 ], 403);
             }
 
@@ -86,7 +107,7 @@ return Application::configure(basePath: dirname(__DIR__))
         });
 
         // 500
-        $exceptions->render(function (\Throwable $e, Request $request) {
+        $exceptions->render(function (Throwable $e, Request $request) {
 
             if ($request->is('api/*')) {
 
