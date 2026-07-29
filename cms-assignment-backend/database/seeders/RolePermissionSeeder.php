@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
+use Spatie\Permission\PermissionRegistrar;
 
 class RolePermissionSeeder extends Seeder
 {
@@ -13,68 +14,98 @@ class RolePermissionSeeder extends Seeder
      */
     public function run(): void
     {
-         app()[\Spatie\Permission\PermissionRegistrar::class]
-            ->forgetCachedPermissions();
+        app()[PermissionRegistrar::class]->forgetCachedPermissions();
 
         $permissions = [
 
+            // Dashboard
             'dashboard.view',
 
+            // Menu
             'menu.view',
             'menu.create',
             'menu.edit',
             'menu.delete',
 
+            // Page
             'page.view',
             'page.create',
             'page.edit',
             'page.delete',
 
+            // User
             'user.view',
             'user.create',
             'user.edit',
             'user.delete',
+
+            // Role
+            'role.view',
+            'role.create',
+            'role.edit',
+            'role.delete',
         ];
 
         foreach ($permissions as $permission) {
             Permission::firstOrCreate([
                 'name' => $permission,
-                'guard_name' => 'web'
+                'guard_name' => 'web',
             ]);
         }
 
+        // Roles
         $admin = Role::firstOrCreate([
             'name' => 'Admin',
-            'guard_name' => 'web'
+            'guard_name' => 'web',
         ]);
 
-        $editor = Role::firstOrCreate([
-            'name' => 'Editor',
-            'guard_name' => 'web'
+        $moderator = Role::firstOrCreate([
+            'name' => 'Moderator',
+            'guard_name' => 'web',
         ]);
 
-          $viewer = Role::firstOrCreate([
+        $viewer = Role::firstOrCreate([
             'name' => 'Viewer',
-            'guard_name' => 'web'
+            'guard_name' => 'web',
         ]);
 
+        /*
+        |--------------------------------------------------------------------------
+        | Admin
+        |--------------------------------------------------------------------------
+        */
         $admin->syncPermissions(Permission::all());
 
-        $editor->syncPermissions([
+        /*
+        |--------------------------------------------------------------------------
+        | Moderator
+        |--------------------------------------------------------------------------
+        */
+        $moderator->syncPermissions([
             'dashboard.view',
+
             'menu.view',
             'menu.create',
             'menu.edit',
+
             'page.view',
             'page.create',
-            'page.edit'
+            'page.edit',
+
+            'user.view',
         ]);
 
+        /*
+        |--------------------------------------------------------------------------
+        | Viewer
+        |--------------------------------------------------------------------------
+        */
         $viewer->syncPermissions([
             'dashboard.view',
+
             'menu.view',
-            'page.view'
-        ]); 
-        
-        }
+
+            'page.view',
+        ]);
+    }
 }

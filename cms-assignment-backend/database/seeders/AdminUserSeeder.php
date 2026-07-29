@@ -13,16 +13,55 @@ class AdminUserSeeder extends Seeder
      */
     public function run(): void
     {
+        /*
+        |--------------------------------------------------------------------------
+        | Admin
+        |--------------------------------------------------------------------------
+        */
         $admin = User::updateOrCreate(
             [
-                'email' => 'admin@cms.com'
+                'email' => 'admin@cms.com',
             ],
             [
                 'name' => 'System Admin',
-                'password' => Hash::make('Password@123')
+                'password' => Hash::make('Password@123'),
             ]
         );
 
-        $admin->assignRole('Admin');
+        $admin->syncRoles(['Admin']);
+
+        /*
+        |--------------------------------------------------------------------------
+        | Moderator
+        |--------------------------------------------------------------------------
+        */
+        $moderator = User::updateOrCreate(
+            [
+                'email' => 'moderator@cms.com',
+            ],
+            [
+                'name' => 'Moderator User',
+                'password' => Hash::make('Password@123'),
+            ]
+        );
+
+        $moderator->syncRoles(['Moderator']);
+
+        /*
+        |--------------------------------------------------------------------------
+        | Viewer
+        |--------------------------------------------------------------------------
+        */
+        $viewer = User::updateOrCreate(
+            [
+                'email' => 'viewer@cms.com',
+            ],
+            [
+                'name' => 'Viewer User',
+                'password' => Hash::make('Password@123'),
+            ]
+        );
+
+        $viewer->syncRoles(['Viewer']);
     }
 }
