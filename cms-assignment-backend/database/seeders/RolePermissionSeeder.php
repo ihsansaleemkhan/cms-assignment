@@ -53,6 +53,11 @@ class RolePermissionSeeder extends Seeder
             'guard_name' => 'web'
         ]);
 
+          $viewer = Role::firstOrCreate([
+            'name' => 'Viewer',
+            'guard_name' => 'web'
+        ]);
+
         $admin->syncPermissions(Permission::all());
 
         $editor->syncPermissions([
@@ -64,5 +69,12 @@ class RolePermissionSeeder extends Seeder
             'page.create',
             'page.edit'
         ]);
-    }
+
+        $viewer->syncPermissions([
+            'dashboard.view',
+            'menu.view',
+            'page.view'
+        ]); 
+        
+        }
 }

@@ -3,47 +3,88 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
+use App\Http\Requests\StoreUserRequest;
+use App\Http\Requests\UpdateUserRequest;
+use App\Http\Resources\UserResource;
+use App\Models\User;
+use Illuminate\Support\Facades\Hash;
 
 class UserController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * GET /users
      */
     public function index()
     {
-        //
+        $users = User::with('roles')
+            ->latest()
+            ->paginate(10);
+
+        return UserResource::collection($users);
     }
 
     /**
-     * Store a newly created resource in storage.
+     * POST /users
      */
-    public function store(Request $request)
+    public function store(StoreUserRequest $request)
     {
-        //
+        $user = User::create([
+            'name'     => $request->name,
+            'email'    => $request->email,
+            'password' => Hash::make($request->password),
+        ]);
+
+        $user->assignRole($request->role);
+
+        return (new UserResource(
+            $user->load('roles')
+        ))
+        ->response()
+        ->setStatusCode(201);
     }
 
     /**
-     * Display the specified resource.
+     * GET /users/{user}
      */
-    public function show(string $id)
+    public function show(User $user)
     {
-        //
+        return new UserResource(
+            $user->load('roles')
+        );
     }
 
     /**
-     * Update the specified resource in storage.
+     * PUT /users/{user}
      */
-    public function update(Request $request, string $id)
+    public function update(UpdateUserRequest $request, User $user)
     {
-        //
+        $data = [
+            'name'  => $request->name,
+            'email' => $request->email,
+        ];
+
+        if ($request->filled('password')) {
+            $data['password'] = Hash::make($request->password);
+        }
+
+        $user->update($data);
+
+        $user->syncRoles([$request->role]);
+
+        return new UserResource(
+            $user->fresh()->load('roles')
+        );
     }
 
     /**
-     * Remove the specified resource from storage.
+     * DELETE /users/{user}
      */
-    public function destroy(string $id)
+    public function destroy(User $user)
     {
-        //
+        $user->delete();
+
+        return response()->json([
+            'message' => 'User deleted successfully.'
+        ]);
     }
 }
