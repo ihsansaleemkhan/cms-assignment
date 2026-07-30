@@ -9,17 +9,19 @@ use OpenApi\Attributes as OA;
     title: "CMS Assignment API",
     description: "CMS Backend API Documentation"
 )]
+
 #[OA\Server(
     url: "http://127.0.0.1:8000/api",
-    description: "Local Server"
+    description: "Local API"
 )]
+
 #[OA\SecurityScheme(
     securityScheme: "sanctum",
-    type: "apiKey",
-    in: "header",
-    name: "Authorization",
-    description: "Bearer Token"
+    type: "http",
+    scheme: "bearer",
+    bearerFormat: "JWT"
 )]
+
 class OpenApi
 {
 }
