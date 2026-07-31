@@ -3,8 +3,8 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
 use Spatie\Permission\PermissionRegistrar;
 
 class RolePermissionSeeder extends Seeder
@@ -15,6 +15,12 @@ class RolePermissionSeeder extends Seeder
     public function run(): void
     {
         app()[PermissionRegistrar::class]->forgetCachedPermissions();
+
+        /*
+        |--------------------------------------------------------------------------
+        | Dashboard Permissions
+        |--------------------------------------------------------------------------
+        */
 
         $permissions = [
 
@@ -47,19 +53,30 @@ class RolePermissionSeeder extends Seeder
         ];
 
         foreach ($permissions as $permission) {
+
             Permission::firstOrCreate([
                 'name' => $permission,
                 'guard_name' => 'web',
             ]);
         }
 
-        // Roles
-        $admin = Role::firstOrCreate([
-            'name' => 'Admin',
+        /*
+        |--------------------------------------------------------------------------
+        | Roles
+        |--------------------------------------------------------------------------
+        */
+
+        $systemAdmin = Role::firstOrCreate([
+            'name' => 'System Administrator',
             'guard_name' => 'web',
         ]);
 
-        $moderator = Role::firstOrCreate([
+        $contentManager = Role::firstOrCreate([
+            'name' => 'Content Manager',
+            'guard_name' => 'web',
+        ]);
+
+        $Moderator = Role::firstOrCreate([
             'name' => 'Moderator',
             'guard_name' => 'web',
         ]);
@@ -71,28 +88,55 @@ class RolePermissionSeeder extends Seeder
 
         /*
         |--------------------------------------------------------------------------
-        | Admin
+        | System Administrator
         |--------------------------------------------------------------------------
         */
-        $admin->syncPermissions(Permission::all());
+
+        $systemAdmin->syncPermissions(
+            Permission::all()
+        );
+
+        /*
+        |--------------------------------------------------------------------------
+        | Content Manager
+        |--------------------------------------------------------------------------
+        */
+
+        $contentManager->syncPermissions([
+
+            'dashboard.view',
+
+            'menu.view',
+            'menu.create',
+            'menu.edit',
+            'menu.delete',
+
+            'page.view',
+            'page.create',
+            'page.edit',
+            'page.delete',
+
+            'user.view',
+
+            'role.view',
+        ]);
 
         /*
         |--------------------------------------------------------------------------
         | Moderator
         |--------------------------------------------------------------------------
         */
-        $moderator->syncPermissions([
+
+        $Moderator->syncPermissions([
+
             'dashboard.view',
 
             'menu.view',
-            'menu.create',
-            'menu.edit',
 
             'page.view',
             'page.create',
             'page.edit',
 
-            'user.view',
         ]);
 
         /*
@@ -100,12 +144,15 @@ class RolePermissionSeeder extends Seeder
         | Viewer
         |--------------------------------------------------------------------------
         */
+
         $viewer->syncPermissions([
+
             'dashboard.view',
 
             'menu.view',
 
             'page.view',
+
         ]);
     }
 }

@@ -274,13 +274,35 @@ routes/
 
 # Default Seed Data
 
-The database seeder creates:
+The database seeder creates the following default data:
 
-- Admin Role
-- Default Permissions
-- Admin User
+## Roles
 
-Login using the seeded administrator account after running:
+- System Administrator
+- Content Manager
+- Content Moderator
+- Viewer
+
+## Permissions
+
+The following permission groups are seeded:
+
+- Dashboard Permissions
+- Menu Permissions
+- Page Permissions
+- User Permissions
+- Role Permissions
+
+## Default Users
+
+| Role | Email | Password |
+|------|--------|----------|
+| System Administrator | admin@cms.com | Password@123 |
+| Content Manager | manager@cms.com | Password@123 |
+| Content Moderator | moderator@cms.com | Password@123 |
+| Viewer | viewer@cms.com | Password@123 |
+
+Run the following command to create the default roles, permissions, and users:
 
 ```bash
 php artisan migrate --seed

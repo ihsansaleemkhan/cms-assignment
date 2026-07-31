@@ -15,53 +15,82 @@ class AdminUserSeeder extends Seeder
     {
         /*
         |--------------------------------------------------------------------------
-        | Admin
+        | System Administrator
         |--------------------------------------------------------------------------
         */
-        $admin = User::updateOrCreate(
+
+        $systemAdministrator = User::updateOrCreate(
             [
                 'email' => 'admin@cms.com',
             ],
             [
-                'name' => 'System Admin',
+                'name' => 'System Administrator',
                 'password' => Hash::make('Password@123'),
             ]
         );
 
-        $admin->syncRoles(['Admin']);
+        $systemAdministrator->syncRoles([
+            'System Administrator',
+        ]);
+
+        /*
+        |--------------------------------------------------------------------------
+        | Content Manager
+        |--------------------------------------------------------------------------
+        */
+
+        $contentManager = User::updateOrCreate(
+            [
+                'email' => 'manager@cms.com',
+            ],
+            [
+                'name' => 'Content Manager',
+                'password' => Hash::make('Password@123'),
+            ]
+        );
+
+        $contentManager->syncRoles([
+            'Content Manager',
+        ]);
 
         /*
         |--------------------------------------------------------------------------
         | Moderator
         |--------------------------------------------------------------------------
         */
-        $moderator = User::updateOrCreate(
+
+        $contentModerator = User::updateOrCreate(
             [
                 'email' => 'moderator@cms.com',
             ],
             [
-                'name' => 'Moderator User',
+                'name' => 'Moderator',
                 'password' => Hash::make('Password@123'),
             ]
         );
 
-        $moderator->syncRoles(['Moderator']);
+        $contentModerator->syncRoles([
+            'Moderator',
+        ]);
 
         /*
         |--------------------------------------------------------------------------
         | Viewer
         |--------------------------------------------------------------------------
         */
+
         $viewer = User::updateOrCreate(
             [
                 'email' => 'viewer@cms.com',
             ],
             [
-                'name' => 'Viewer User',
+                'name' => 'Viewer',
                 'password' => Hash::make('Password@123'),
             ]
         );
 
-        $viewer->syncRoles(['Viewer']);
+        $viewer->syncRoles([
+            'Viewer',
+        ]);
     }
 }
