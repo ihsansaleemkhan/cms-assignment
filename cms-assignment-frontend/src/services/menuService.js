@@ -17,14 +17,11 @@ export const getMenus = async ({
 };
 
 export const getAllMenus = async () => {
-    const { data } = await api.get("/menus", {
-        params: {
-            page: 1,
-            per_page: 1000,
-        },
-    });
+
+    const { data } = await api.get("/menus/all");
 
     return data.data;
+
 };
 
 export const getMenu = async (id) => {

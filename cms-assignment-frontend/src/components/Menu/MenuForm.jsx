@@ -135,6 +135,28 @@ const MenuForm = ({
 
         ]);
 
+
+        const flattenMenus = (menus, level = 0) => {
+            let result = [];
+
+            menus.forEach((menu) => {
+                result.push({
+                    id: menu.id,
+                    title: `${"— ".repeat(level)}${menu.title}`,
+                });
+
+                if (menu.children?.length) {
+                    result = result.concat(
+                        flattenMenus(menu.children, level + 1)
+                    );
+                }
+            });
+
+            return result;
+        };
+
+        const parentMenus = flattenMenus(menus);
+
     return (
 
         <form onSubmit={handleSubmit(onSubmit)}>
@@ -177,32 +199,24 @@ const MenuForm = ({
                             name="parent_id"
                             control={control}
                             render={({ field }) => (
-
                                 <Select
                                     {...field}
                                     value={field.value ?? ""}
                                     label="Parent Menu"
                                 >
-
                                     <MenuItem value="">
                                         None (Top Level)
                                     </MenuItem>
 
-                                    {menus.map(menu => (
-
+                                    {parentMenus.map((menu) => (
                                         <MenuItem
                                             key={menu.id}
                                             value={menu.id}
                                         >
-
                                             {menu.title}
-
                                         </MenuItem>
-
                                     ))}
-
                                 </Select>
-
                             )}
                         />
 
