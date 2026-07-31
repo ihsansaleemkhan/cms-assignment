@@ -21,7 +21,7 @@ class StoreMenuRequest extends FormRequest
 
             'slug' => 'required|string|max:255|unique:menus,slug',
 
-            'sort_order' => 'nullable|integer|min:0',
+            'sort_order' => 'nullable|integer',
 
             'is_active' => 'nullable|boolean',
         ];

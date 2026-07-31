@@ -27,8 +27,6 @@ class UpdateMenuRequest extends FormRequest
                 Rule::unique('menus')->ignore($this->menu)
             ],
 
-            'sort_order' => 'nullable|integer|min:0',
-
             'is_active' => 'nullable|boolean',
         ];
     }

@@ -147,10 +147,6 @@
                                         "type": "string",
                                         "example": "about-us"
                                     },
-                                    "sort_order": {
-                                        "type": "integer",
-                                        "example": 1
-                                    },
                                     "is_active": {
                                         "type": "boolean",
                                         "example": true
@@ -248,10 +244,6 @@
                                     "slug": {
                                         "type": "string",
                                         "example": "updated-menu"
-                                    },
-                                    "sort_order": {
-                                        "type": "integer",
-                                        "example": 2
                                     },
                                     "is_active": {
                                         "type": "boolean",

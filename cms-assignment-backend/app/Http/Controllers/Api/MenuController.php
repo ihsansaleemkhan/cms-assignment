@@ -63,7 +63,6 @@ class MenuController extends Controller implements HasMiddleware
                 new OA\Property(property: "parent_id", type: "integer", nullable: true, example: 1),
                 new OA\Property(property: "title", type: "string", example: "About Us"),
                 new OA\Property(property: "slug", type: "string", example: "about-us"),
-                new OA\Property(property: "sort_order", type: "integer", example: 1),
                 new OA\Property(property: "is_active", type: "boolean", example: true),
             ]
         )
@@ -79,11 +78,22 @@ class MenuController extends Controller implements HasMiddleware
 
     public function store(StoreMenuRequest $request)
     {
-        $menu = Menu::create($request->validated());
+        $sortOrder = Menu::where('parent_id', $request->parent_id)
+            ->max('sort_order');
 
-        return (new MenuResource($menu))
-            ->response()
-            ->setStatusCode(201);
+        $sortOrder = $sortOrder ? $sortOrder + 1 : 1;
+
+        $menu = Menu::create([
+            'title'      => $request->title,
+            'slug'       => $request->slug,
+            'parent_id'  => $request->parent_id,
+            'sort_order' => $sortOrder,
+            'is_active'  => $request->boolean('is_active'),
+        ]);
+
+        return new MenuResource(
+            $menu->fresh()->load('children')
+        );
     }
 
     /**
@@ -142,7 +152,6 @@ class MenuController extends Controller implements HasMiddleware
                 new OA\Property(property: "parent_id", type: "integer", nullable: true, example: 1),
                 new OA\Property(property: "title", type: "string", example: "Updated Menu"),
                 new OA\Property(property: "slug", type: "string", example: "updated-menu"),
-                new OA\Property(property: "sort_order", type: "integer", example: 2),
                 new OA\Property(property: "is_active", type: "boolean", example: true),
             ]
         )
@@ -158,7 +167,12 @@ class MenuController extends Controller implements HasMiddleware
 
     public function update(UpdateMenuRequest $request, Menu $menu)
     {
-        $menu->update($request->validated());
+        $menu->update([
+            'parent_id' => $request->parent_id,
+            'title' => $request->title,
+            'slug' => $request->slug,
+            'is_active' => $request->boolean('is_active'),
+        ]);
 
         return new MenuResource(
             $menu->fresh()->load('children')
