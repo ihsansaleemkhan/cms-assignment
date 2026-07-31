@@ -55,3 +55,13 @@ export const deleteMenu = async (id) => {
     return data;
 
 };
+
+export const reorderMenus = async (payload) => {
+
+    const { data } = await api.put("/menus/reorder", {
+        menus: payload,
+    });
+
+    return data;
+
+};

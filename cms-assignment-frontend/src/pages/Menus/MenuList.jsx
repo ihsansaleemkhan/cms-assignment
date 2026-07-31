@@ -15,7 +15,10 @@ import AddIcon from "@mui/icons-material/Add";
 
 import MenuTree from "../../components/Menu/MenuTree";
 
-import { getMenus } from "../../services/menuService";
+import {
+    getMenus,
+    reorderMenus,
+} from "../../services/menuService";
 
 import usePermissions from "../../hooks/usePermissions";
 
@@ -24,6 +27,8 @@ import CreateMenuDialog from "../../components/Menu/CreateMenuDialog";
 import EditMenuDialog from "../../components/Menu/EditMenuDialog";
 
 import DeleteMenuDialog from "../../components/Menu/DeleteMenuDialog";
+
+import { toast } from "react-toastify";
 
 const MenuList = () => {
 
@@ -91,6 +96,37 @@ const MenuList = () => {
 
     };
 
+    const handleReorder = async (newMenus) => {
+
+        try {
+
+            const payload = newMenus.map((menu, index) => ({
+
+                id: menu.id,
+
+                parent_id: null,
+
+                sort_order: index + 1,
+
+            }));
+
+            await reorderMenus(payload);
+
+            toast.success("Menu order updated");
+
+            loadMenus();
+
+        } catch (error) {
+
+            toast.error(
+                error.response?.data?.message ??
+                "Unable to reorder menus."
+            );
+
+        }
+
+    };
+
     useEffect(() => {
 
         loadMenus();
@@ -153,8 +189,10 @@ const MenuList = () => {
                 ) : (
                     <MenuTree
                         menus={menus}
+                        loading={loading}
                         onEdit={handleEdit}
                         onDelete={handleDelete}
+                        onReorder={handleReorder}
                         canEdit={hasPermission("menu.edit")}
                         canDelete={hasPermission("menu.delete")}
                     />

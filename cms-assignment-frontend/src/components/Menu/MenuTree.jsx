@@ -1,6 +1,7 @@
 import {
     Box,
     Chip,
+    CircularProgress,
     IconButton,
     Stack,
     Tooltip,
@@ -11,153 +12,206 @@ import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 
 import {
-    SimpleTreeView,
-    TreeItem,
-} from "@mui/x-tree-view";
+    DndContext,
+    closestCenter,
+} from "@dnd-kit/core";
+
+import {
+    SortableContext,
+    verticalListSortingStrategy,
+    arrayMove,
+} from "@dnd-kit/sortable";
+
+import { useEffect, useState } from "react";
+
+import SortableMenuItem from "./SortableMenuItem";
 
 const MenuTree = ({
     menus,
+    loading,
     onEdit,
     onDelete,
+    onReorder,
     canEdit,
     canDelete,
 }) => {
 
-    const renderNode = (menu) => (
+    const [items, setItems] = useState([]);
 
-        <TreeItem
-            key={menu.id}
-            itemId={String(menu.id)}
-            label={
+    useEffect(() => {
+        setItems(menus);
+    }, [menus]);
 
-                <Stack
-                    direction="row"
-                    justifyContent="space-between"
-                    alignItems="center"
-                    sx={{
-                        py: 0.5,
-                        width: "100%",
-                    }}
-                >
+    const handleDragEnd = ({ active, over }) => {
 
-                    <Stack spacing={0.5}>
+        if (!over || active.id === over.id) return;
 
-                        <Typography
-                            fontWeight={600}
-                        >
-                            {menu.title}
-                        </Typography>
+        const oldIndex = items.findIndex(
+            item => item.id === active.id
+        );
 
-                        <Typography
-                            variant="caption"
-                            color="text.secondary"
-                        >
-                            {menu.slug}
-                        </Typography>
+        const newIndex = items.findIndex(
+            item => item.id === over.id
+        );
 
-                    </Stack>
+        const newItems = arrayMove(
+            items,
+            oldIndex,
+            newIndex
+        );
 
-                    <Stack
-                        direction="row"
-                        spacing={1}
-                        alignItems="center"
+        setItems(newItems);
+
+        if (onReorder) {
+            onReorder(newItems);
+        }
+    };
+
+    const renderChildren = (children = []) => {
+
+        if (!children.length) return null;
+
+        return (
+            <Box
+                sx={{
+                    ml: 5,
+                    mt: 1,
+                }}
+            >
+                {children.map(child => (
+
+                    <Box
+                        key={child.id}
+                        sx={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                            alignItems: "center",
+                            py: 1,
+                            borderBottom: "1px dashed #eee",
+                        }}
                     >
 
-                        <Chip
-                            size="small"
-                            label={
-                                menu.is_active
-                                    ? "Active"
-                                    : "Inactive"
-                            }
-                            color={
-                                menu.is_active
-                                    ? "success"
-                                    : "default"
-                            }
-                        />
+                        <Stack spacing={0.5}>
 
-                        <Chip
-                            size="small"
-                            label={`Order ${menu.sort_order}`}
-                            variant="outlined"
-                        />
+                            <Typography
+                                variant="body2"
+                                fontWeight={600}
+                            >
+                                {child.title}
+                            </Typography>
 
-                        {canEdit && (
+                            <Typography
+                                variant="caption"
+                                color="text.secondary"
+                            >
+                                {child.slug}
+                            </Typography>
 
-                            <Tooltip title="Edit">
+                        </Stack>
 
-                                <IconButton
-                                    size="small"
-                                    color="primary"
-                                    onClick={(e) => {
+                        <Stack
+                            direction="row"
+                            spacing={1}
+                            alignItems="center"
+                        >
 
-                                        e.stopPropagation();
+                            <Chip
+                                size="small"
+                                label={
+                                    child.is_active
+                                        ? "Active"
+                                        : "Inactive"
+                                }
+                                color={
+                                    child.is_active
+                                        ? "success"
+                                        : "default"
+                                }
+                            />
 
-                                        onEdit(menu.id);
+                            {canEdit && (
+                                <Tooltip title="Edit">
+                                    <IconButton
+                                        size="small"
+                                        color="primary"
+                                        onClick={() => onEdit(child.id)}
+                                    >
+                                        <EditIcon fontSize="small" />
+                                    </IconButton>
+                                </Tooltip>
+                            )}
 
-                                    }}
-                                >
+                            {canDelete && (
+                                <Tooltip title="Delete">
+                                    <IconButton
+                                        size="small"
+                                        color="error"
+                                        onClick={() => onDelete(child)}
+                                    >
+                                        <DeleteIcon fontSize="small" />
+                                    </IconButton>
+                                </Tooltip>
+                            )}
 
-                                    <EditIcon fontSize="small" />
+                        </Stack>
 
-                                </IconButton>
+                    </Box>
 
-                            </Tooltip>
+                ))}
+            </Box>
+        );
+    };
 
-                        )}
+    if (loading) {
 
-                        {canDelete && (
-
-                            <Tooltip title="Delete">
-
-                                <IconButton
-                                    size="small"
-                                    color="error"
-                                    onClick={(e) => {
-
-                                        e.stopPropagation();
-
-                                        onDelete(menu);
-
-                                    }}
-                                >
-
-                                    <DeleteIcon fontSize="small" />
-
-                                </IconButton>
-
-                            </Tooltip>
-
-                        )}
-
-                    </Stack>
-
-                </Stack>
-
-            }
-
-        >
-
-            {menu.children?.map(renderNode)}
-
-        </TreeItem>
-
-    );
+        return (
+            <Box
+                py={6}
+                display="flex"
+                justifyContent="center"
+            >
+                <CircularProgress />
+            </Box>
+        );
+    }
 
     return (
 
-        <Box>
+        <DndContext
+            collisionDetection={closestCenter}
+            onDragEnd={handleDragEnd}
+        >
 
-            <SimpleTreeView>
+            <SortableContext
+                items={items.map(i => i.id)}
+                strategy={verticalListSortingStrategy}
+            >
 
-                {menus
-                    .filter(menu => menu.parent_id === null)
-                    .map(renderNode)}
+                <Stack spacing={2}>
 
-            </SimpleTreeView>
+                    {items.map(menu => (
 
-        </Box>
+                        <Box key={menu.id}>
+
+                            <SortableMenuItem
+                                menu={menu}
+                                onEdit={onEdit}
+                                onDelete={onDelete}
+                                canEdit={canEdit}
+                                canDelete={canDelete}
+                            />
+
+                            {renderChildren(menu.children)}
+
+                        </Box>
+
+                    ))}
+
+                </Stack>
+
+            </SortableContext>
+
+        </DndContext>
 
     );
 
