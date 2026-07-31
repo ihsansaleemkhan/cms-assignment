@@ -16,7 +16,10 @@ class MenuController extends Controller implements HasMiddleware
     public static function middleware(): array
     {
         return [
-            new Middleware('permission:menu.view', only: ['index', 'show']),
+            new Middleware(
+                'permission:menu.view',
+                only: ['index', 'show', 'all']
+            ),
             new Middleware('permission:menu.create', only: ['store']),
             new Middleware('permission:menu.edit', only: ['update']),
             new Middleware('permission:menu.delete', only: ['destroy']),
@@ -210,5 +213,28 @@ class MenuController extends Controller implements HasMiddleware
         return response()->json([
             'message' => 'Menu deleted successfully.'
         ], 200);
+    }
+
+    /**
+     * GET /menus/all
+     */
+    #[OA\Get(
+        path: "/menus/all",
+        summary: "Get all menus",
+        tags: ["Menus"],
+        security: [["sanctum" => []]]
+    )]
+    #[OA\Response(
+        response: 200,
+        description: "All menus retrieved successfully"
+    )]
+    public function all()
+    {
+        $menus = Menu::with('children')
+            ->whereNull('parent_id')
+            ->orderBy('sort_order')
+            ->get();
+
+        return MenuResource::collection($menus);
     }
 }

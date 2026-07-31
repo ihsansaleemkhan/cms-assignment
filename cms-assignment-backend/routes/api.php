@@ -15,6 +15,8 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::post('/logout', [AuthController::class, 'logout']);
 
+    Route::get('menus/all', [MenuController::class, 'all'])
+    ->middleware('permission:menu.view');
     Route::apiResource('menus', MenuController::class);
     Route::apiResource('pages', PageController::class);
     Route::apiResource('users', UserController::class);

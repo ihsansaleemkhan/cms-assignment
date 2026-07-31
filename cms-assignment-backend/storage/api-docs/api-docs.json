@@ -302,6 +302,26 @@
                 ]
             }
         },
+        "/menus/all": {
+            "get": {
+                "tags": [
+                    "Menus"
+                ],
+                "summary": "Get all menus",
+                "description": "GET /menus/all",
+                "operationId": "5f86899c3d35139703c9f36f22bce01a",
+                "responses": {
+                    "200": {
+                        "description": "All menus retrieved successfully"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
         "/pages": {
             "get": {
                 "tags": [
