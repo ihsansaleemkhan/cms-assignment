@@ -10,6 +10,8 @@ use App\Models\Menu;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
 use OpenApi\Attributes as OA;
+use App\Http\Requests\ReorderMenuRequest;
+use Illuminate\Support\Facades\DB;
 
 class MenuController extends Controller implements HasMiddleware
 {
@@ -21,7 +23,10 @@ class MenuController extends Controller implements HasMiddleware
                 only: ['index', 'show', 'all']
             ),
             new Middleware('permission:menu.create', only: ['store']),
-            new Middleware('permission:menu.edit', only: ['update']),
+            new Middleware(
+                'permission:menu.edit',
+                only: ['update', 'reorder']
+            ),
             new Middleware('permission:menu.delete', only: ['destroy']),
         ];
     }
@@ -257,5 +262,75 @@ class MenuController extends Controller implements HasMiddleware
             ->get();
 
         return MenuResource::collection($menus);
+    }
+
+
+    /**
+     * PUT /menus/reorder
+     */
+    #[OA\Put(
+        path: "/menus/reorder",
+        summary: "Reorder menus",
+        tags: ["Menus"],
+        security: [["sanctum" => []]]
+    )]
+    #[OA\RequestBody(
+        required: true,
+        content: new OA\JsonContent(
+            required: ["items"],
+            properties: [
+                new OA\Property(
+                    property: "items",
+                    type: "array",
+                    items: new OA\Items(
+                        properties: [
+                            new OA\Property(
+                                property: "id",
+                                type: "integer"
+                            ),
+                            new OA\Property(
+                                property: "parent_id",
+                                type: "integer",
+                                nullable: true
+                            ),
+                            new OA\Property(
+                                property: "sort_order",
+                                type: "integer"
+                            ),
+                        ]
+                    )
+                ),
+            ]
+        )
+    )]
+    #[OA\Response(
+        response: 200,
+        description: "Menu order updated successfully"
+    )]
+    public function reorder(ReorderMenuRequest $request)
+    {
+        DB::transaction(function () use ($request) {
+
+            foreach ($request->items as $item) {
+
+                Menu::where('id', $item['id'])
+                    ->update([
+
+                        'parent_id' => $item['parent_id'],
+
+                        'sort_order' => $item['sort_order'],
+
+                    ]);
+
+            }
+
+        });
+
+        return response()->json([
+
+            'message' => 'Menu order updated successfully.'
+
+        ]);
+
     }
 }
