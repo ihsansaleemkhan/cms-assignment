@@ -322,6 +322,59 @@
                 ]
             }
         },
+        "/menus/reorder": {
+            "put": {
+                "tags": [
+                    "Menus"
+                ],
+                "summary": "Reorder menus",
+                "description": "PUT /menus/reorder",
+                "operationId": "fd43778bc80aa8f27c84e133bbbfea35",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "items"
+                                ],
+                                "properties": {
+                                    "items": {
+                                        "type": "array",
+                                        "items": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer"
+                                                },
+                                                "parent_id": {
+                                                    "type": "integer",
+                                                    "nullable": true
+                                                },
+                                                "sort_order": {
+                                                    "type": "integer"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Menu order updated successfully"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
         "/pages": {
             "get": {
                 "tags": [

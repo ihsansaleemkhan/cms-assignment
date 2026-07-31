@@ -14,23 +14,13 @@ class ReorderMenuRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'items' => ['required', 'array'],
+            'menus' => ['required', 'array'],
 
-            'items.*.id' => [
-                'required',
-                'exists:menus,id'
-            ],
+            'menus.*.id' => ['required', 'exists:menus,id'],
 
-            'items.*.parent_id' => [
-                'nullable',
-                'exists:menus,id'
-            ],
+            'menus.*.parent_id' => ['nullable', 'exists:menus,id'],
 
-            'items.*.sort_order' => [
-                'required',
-                'integer',
-                'min:1'
-            ],
+            'menus.*.sort_order' => ['required', 'integer', 'min:1'],
         ];
     }
 }

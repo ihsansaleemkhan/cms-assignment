@@ -307,30 +307,39 @@ class MenuController extends Controller implements HasMiddleware
         response: 200,
         description: "Menu order updated successfully"
     )]
-    public function reorder(ReorderMenuRequest $request)
+   public function reorder(ReorderMenuRequest $request)
     {
-        DB::transaction(function () use ($request) {
+        DB::beginTransaction();
 
-            foreach ($request->items as $item) {
+        try {
 
-                Menu::where('id', $item['id'])
-                    ->update([
+            foreach ($request->input('menus') as $menu) {
 
-                        'parent_id' => $item['parent_id'],
-
-                        'sort_order' => $item['sort_order'],
-
-                    ]);
+                Menu::findOrFail($menu['id'])->update([
+                    'parent_id'  => $menu['parent_id'],
+                    'sort_order' => $menu['sort_order'],
+                ]);
 
             }
 
-        });
+            DB::commit();
 
-        return response()->json([
+            return response()->json([
+                'success' => true,
+                'message' => 'Menus reordered successfully.',
+            ]);
 
-            'message' => 'Menu order updated successfully.'
+        } catch (\Throwable $e) {
 
-        ]);
+            DB::rollBack();
 
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+                'line'    => $e->getLine(),
+                'file'    => $e->getFile(),
+            ], 500);
+
+        }
     }
 }

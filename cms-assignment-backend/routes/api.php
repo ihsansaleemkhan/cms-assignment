@@ -18,10 +18,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('menus/all', [MenuController::class, 'all'])
     ->middleware('permission:menu.view');
 
-    Route::put(
-        'menus/reorder',
-        [MenuController::class, 'reorder']
-    )->middleware('permission:menu.edit');
+    Route::put('/menus/reorder', [MenuController::class, 'reorder']);
 
 
     Route::apiResource('menus', MenuController::class);
