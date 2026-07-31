@@ -118,7 +118,7 @@ const MenuTree = ({
 
                                         e.stopPropagation();
 
-                                        onDelete(menu.id);
+                                        onDelete(menu);
 
                                     }}
                                 >

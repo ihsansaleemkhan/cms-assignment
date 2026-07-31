@@ -7,6 +7,8 @@ import {
     TextField,
     Button,
     Stack,
+    Skeleton,
+    Alert,
 } from "@mui/material";
 
 import AddIcon from "@mui/icons-material/Add";
@@ -20,6 +22,8 @@ import usePermissions from "../../hooks/usePermissions";
 import CreateMenuDialog from "../../components/Menu/CreateMenuDialog";
 
 import EditMenuDialog from "../../components/Menu/EditMenuDialog";
+
+import DeleteMenuDialog from "../../components/Menu/DeleteMenuDialog";
 
 const MenuList = () => {
 
@@ -68,6 +72,10 @@ const MenuList = () => {
 
     const [openEdit, setOpenEdit] = useState(false);
 
+    const [openDelete, setOpenDelete] = useState(false);
+
+    const [selectedMenu, setSelectedMenu] = useState(null);
+
     const [selectedMenuId, setSelectedMenuId] = useState(null);
 
     const handleEdit = (id) => {
@@ -75,9 +83,11 @@ const MenuList = () => {
         setOpenEdit(true);
     };
 
-    const handleDelete = (id) => {
+    const handleDelete = (menu) => {
 
-        console.log(id);
+        setSelectedMenu(menu);
+
+        setOpenDelete(true);
 
     };
 
@@ -128,13 +138,27 @@ const MenuList = () => {
                     }
                 />
 
-                <MenuTree
-                    menus={menus}
-                    onEdit={handleEdit}
-                    onDelete={handleDelete}
-                    canEdit={hasPermission("menu.edit")}
-                    canDelete={hasPermission("menu.delete")}
-                />
+                {loading ? (
+                    <>
+                        <Skeleton height={55} />
+                        <Skeleton height={55} />
+                        <Skeleton height={55} />
+                        <Skeleton height={55} />
+                        <Skeleton height={55} />
+                    </>
+                ) : menus.length === 0 ? (
+                    <Alert severity="info">
+                        No menus found.
+                    </Alert>
+                ) : (
+                    <MenuTree
+                        menus={menus}
+                        onEdit={handleEdit}
+                        onDelete={handleDelete}
+                        canEdit={hasPermission("menu.edit")}
+                        canDelete={hasPermission("menu.delete")}
+                    />
+                )}
 
             </Paper>
 
@@ -148,6 +172,14 @@ const MenuList = () => {
                 open={openEdit}
                 menuId={selectedMenuId}
                 onClose={() => setOpenEdit(false)}
+                onSuccess={loadMenus}
+            />
+
+            <DeleteMenuDialog
+                open={openDelete}
+                menuId={selectedMenu?.id}
+                menuTitle={selectedMenu?.title}
+                onClose={() => setOpenDelete(false)}
                 onSuccess={loadMenus}
             />
 
