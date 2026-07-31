@@ -5,7 +5,7 @@ import Dashboard from "../pages/Dashboard/Dashboard";
 import MenuList from "../pages/Menus/MenuList";
 import PagesList from "../pages/Pages/PageList";
 import UserList from "../pages/Users/UserList";
-import Roles from "../pages/Roles/Roles";
+import RoleList from "../pages/Roles/RoleList";
 
 import ProtectedRoute from "../components/Common/ProtectedRoute";
 import AdminLayout from "../layouts/AdminLayout";
@@ -57,7 +57,7 @@ const AppRoutes = () => {
 
                     <Route
                         path="/roles"
-                        element={<Roles />}
+                        element={<RoleList />}
                     />
 
                 </Route>
