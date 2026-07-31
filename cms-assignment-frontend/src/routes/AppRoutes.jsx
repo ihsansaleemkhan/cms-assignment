@@ -3,7 +3,7 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import Login from "../pages/Auth/Login";
 import Dashboard from "../pages/Dashboard/Dashboard";
 import MenuList from "../pages/Menus/MenuList";
-import Pages from "../pages/Pages/Pages";
+import PagesList from "../pages/Pages/PageList";
 import Users from "../pages/Users/Users";
 import Roles from "../pages/Roles/Roles";
 
@@ -47,7 +47,7 @@ const AppRoutes = () => {
 
                     <Route
                         path="/pages"
-                        element={<Pages />}
+                        element={<PagesList />}
                     />
 
                     <Route
