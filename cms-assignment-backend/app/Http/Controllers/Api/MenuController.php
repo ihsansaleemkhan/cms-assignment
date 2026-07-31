@@ -42,7 +42,28 @@ class MenuController extends Controller implements HasMiddleware
 
     public function index()
     {
-        $menus = Menu::with('children')
+        $query = Menu::with('children')
+            ->whereNull('parent_id');
+
+        if (request()->filled('search')) {
+
+            $search = request('search');
+
+            $query->where(function ($q) use ($search) {
+
+                $q->where('title','like',"%$search%")
+                ->orWhere('slug','like',"%$search%")
+                ->orWhereHas('children', function ($child) use ($search){
+
+                        $child->where('title','like',"%$search%")
+                            ->orWhere('slug','like',"%$search%");
+
+                });
+
+            });
+        }
+
+        $menus = $query
             ->orderBy('sort_order')
             ->paginate(10);
 
