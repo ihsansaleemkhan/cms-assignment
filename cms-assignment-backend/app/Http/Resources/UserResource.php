@@ -22,11 +22,14 @@ class UserResource extends JsonResource
 
             'roles' => $this->getRoleNames(),
 
-            'permissions' => $this->getPermissionNames(),
+            'permissions' => $this->getAllPermissions()
+                ->pluck('name')
+                ->values(),
 
             'created_at' => $this->created_at,
 
             'updated_at' => $this->updated_at,
+
         ];
     }
 }
