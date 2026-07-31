@@ -3,17 +3,20 @@ import api from "../api/axios";
 export const getPages = async ({
     page = 1,
     search = "",
+    menu_id = "",
+    status = "",
 }) => {
 
     const { data } = await api.get("/pages", {
         params: {
             page,
             search,
+            menu_id,
+            status,
         },
     });
 
     return data;
-
 };
 
 export const getPage = async (id) => {

@@ -33,7 +33,7 @@ const menus = [
         path: "/dashboard",
     },
     {
-        text: "Menus",
+        text: "Menu",
         icon: <MenuBook />,
         path: "/menus",
     },

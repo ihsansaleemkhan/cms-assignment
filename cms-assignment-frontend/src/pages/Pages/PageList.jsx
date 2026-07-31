@@ -9,6 +9,10 @@ import {
     Stack,
     Skeleton,
     Alert,
+    FormControl,
+    InputLabel,
+    Select,
+    MenuItem,
 } from "@mui/material";
 
 import AddIcon from "@mui/icons-material/Add";
@@ -17,9 +21,8 @@ import { toast } from "react-toastify";
 
 import usePermissions from "../../hooks/usePermissions";
 
-import {
-    getPages,
-} from "../../services/pageService";
+import { getPages } from "../../services/pageService";
+import { getAllMenus } from "../../services/menuService";
 
 import PageTable from "../../components/Pages/PageTable";
 
@@ -33,9 +36,15 @@ const PageList = () => {
 
     const [pages, setPages] = useState([]);
 
+    const [menus, setMenus] = useState([]);
+
     const [loading, setLoading] = useState(false);
 
     const [search, setSearch] = useState("");
+
+    const [menuId, setMenuId] = useState("");
+
+    const [status, setStatus] = useState("");
 
     const [paginationModel, setPaginationModel] = useState({
         page: 0,
@@ -54,6 +63,22 @@ const PageList = () => {
 
     const [selectedPage, setSelectedPage] = useState(null);
 
+    const loadMenus = async () => {
+
+        try {
+
+            const data = await getAllMenus();
+
+            setMenus(data);
+
+        } catch (error) {
+
+            console.log(error);
+
+        }
+
+    };
+
     const loadPages = async () => {
 
         try {
@@ -66,6 +91,10 @@ const PageList = () => {
 
                 search,
 
+                menu_id: menuId,
+
+                status,
+
             });
 
             setPages(response.data);
@@ -75,8 +104,11 @@ const PageList = () => {
         } catch (error) {
 
             toast.error(
+
                 error.response?.data?.message ??
+
                 "Unable to load pages."
+
             );
 
         } finally {
@@ -89,9 +121,45 @@ const PageList = () => {
 
     useEffect(() => {
 
+        loadMenus();
+
+    }, []);
+
+    useEffect(() => {
+
         loadPages();
 
-    }, [paginationModel.page, search]);
+    }, [
+
+        paginationModel.page,
+
+        search,
+
+        menuId,
+
+        status,
+
+    ]);
+
+    useEffect(() => {
+
+        setPaginationModel((prev) => ({
+
+            ...prev,
+
+            page: 0,
+
+        }));
+
+    }, [
+
+        search,
+
+        menuId,
+
+        status,
+
+    ]);
 
     const handleEdit = (id) => {
 
@@ -144,24 +212,132 @@ const PageList = () => {
 
             <Paper sx={{ p: 2 }}>
 
-                <TextField
-                    fullWidth
-                    label="Search..."
-                    value={search}
-                    sx={{ mb: 2 }}
-                    onChange={(e) =>
-                        setSearch(e.target.value)
-                    }
-                />
+                <Stack
+                    direction={{ xs: "column", md: "row" }}
+                    spacing={2}
+                    mb={3}
+                >
+
+                    <TextField
+                        fullWidth
+                        label="Search Page"
+                        placeholder="Search by title..."
+                        value={search}
+                        onChange={(e) =>
+                            setSearch(e.target.value)
+                        }
+                    />
+
+                    <FormControl sx={{ minWidth: 220 }}>
+
+                        <InputLabel>
+
+                            Menu
+
+                        </InputLabel>
+
+                        <Select
+                            label="Menu"
+                            value={menuId}
+                            onChange={(e) =>
+                                setMenuId(e.target.value)
+                            }
+                        >
+
+                            <MenuItem value="">
+
+                                All Menus
+
+                            </MenuItem>
+
+                            {menus.map((menu) => (
+
+                                <MenuItem
+                                    key={menu.id}
+                                    value={menu.id}
+                                >
+
+                                    {menu.title}
+
+                                </MenuItem>
+
+                            ))}
+
+                        </Select>
+
+                    </FormControl>
+
+                    <FormControl sx={{ minWidth: 180 }}>
+
+                        <InputLabel>
+
+                            Status
+
+                        </InputLabel>
+
+                        <Select
+                            label="Status"
+                            value={status}
+                            onChange={(e) =>
+                                setStatus(e.target.value)
+                            }
+                        >
+
+                            <MenuItem value="">
+
+                                All Status
+
+                            </MenuItem>
+
+                            <MenuItem value="draft">
+
+                                Draft
+
+                            </MenuItem>
+
+                            <MenuItem value="published">
+
+                                Published
+
+                            </MenuItem>
+
+                        </Select>
+
+                    </FormControl>
+
+                    <Button
+                        variant="outlined"
+                        onClick={() => {
+
+                            setSearch("");
+
+                            setMenuId("");
+
+                            setStatus("");
+
+                        }}
+                    >
+
+                        Clear Filters
+
+                    </Button>
+
+                </Stack>
 
                 {loading ? (
 
                     <>
+
                         <Skeleton height={60} />
+
                         <Skeleton height={60} />
+
                         <Skeleton height={60} />
+
                         <Skeleton height={60} />
+
                         <Skeleton height={60} />
+
                     </>
 
                 ) : pages.length === 0 ? (
