@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\MenuController;
 use App\Http\Controllers\Api\PageController;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\RoleController;
+use App\Http\Controllers\Api\PermissionController;
 
 Route::post('/login', [AuthController::class, 'login']);
 
@@ -25,4 +26,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('pages', PageController::class);
     Route::apiResource('users', UserController::class);
     Route::apiResource('roles', RoleController::class);
+    
+    Route::get(
+    '/permissions',
+    [PermissionController::class, 'index']
+);
 });

@@ -636,6 +636,29 @@
                 ]
             }
         },
+        "/permissions": {
+            "get": {
+                "tags": [
+                    "Roles"
+                ],
+                "summary": "List Permissions",
+                "description": "Returns all available permissions. Used when creating or editing roles.",
+                "operationId": "listPermissions",
+                "responses": {
+                    "200": {
+                        "description": "Permissions retrieved successfully"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
         "/roles": {
             "get": {
                 "tags": [
