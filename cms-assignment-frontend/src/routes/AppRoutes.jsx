@@ -4,7 +4,7 @@ import Login from "../pages/Auth/Login";
 import Dashboard from "../pages/Dashboard/Dashboard";
 import MenuList from "../pages/Menus/MenuList";
 import PagesList from "../pages/Pages/PageList";
-import Users from "../pages/Users/Users";
+import UserList from "../pages/Users/UserList";
 import Roles from "../pages/Roles/Roles";
 
 import ProtectedRoute from "../components/Common/ProtectedRoute";
@@ -52,7 +52,7 @@ const AppRoutes = () => {
 
                     <Route
                         path="/users"
-                        element={<Users />}
+                        element={<UserList />}
                     />
 
                     <Route

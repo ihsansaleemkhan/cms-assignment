@@ -43,14 +43,14 @@ const menus = [
         path: "/pages",
     },
     {
+        text: "Roles & Permissions",
+        icon: <Security />,
+        path: "/roles",
+    },
+    {
         text: "Users",
         icon: <People />,
         path: "/users",
-    },
-    {
-        text: "Roles",
-        icon: <Security />,
-        path: "/roles",
     },
 ];
 
