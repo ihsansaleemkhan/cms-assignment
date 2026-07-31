@@ -1,3 +1,5 @@
+import { useEffect, useState } from "react";
+
 import {
     Dialog,
     DialogTitle,
@@ -7,12 +9,20 @@ import {
     Box,
     Typography,
     alpha,
+    CircularProgress,
 } from "@mui/material";
 
 import CloseIcon from "@mui/icons-material/Close";
 import EditNoteIcon from "@mui/icons-material/EditNote";
 
+import { toast } from "react-toastify";
+
 import PageForm from "./PageForm";
+
+import {
+    getPage,
+    updatePage,
+} from "../../services/pageService";
 
 const EditPageDialog = ({
     open,
@@ -21,11 +31,72 @@ const EditPageDialog = ({
     onSuccess,
 }) => {
 
+    const [loading, setLoading] = useState(false);
+
+    const [page, setPage] = useState(null);
+
+    const loadPage = async () => {
+
+        if (!pageId) return;
+
+        try {
+
+            setLoading(true);
+
+            const response = await getPage(pageId);
+
+            setPage(response.data);
+
+        } catch (error) {
+
+            toast.error(
+                error.response?.data?.message ??
+                "Unable to load page."
+            );
+
+        } finally {
+
+            setLoading(false);
+
+        }
+
+    };
+
+    useEffect(() => {
+
+        if (open) {
+            loadPage();
+        }
+
+    }, [open, pageId]);
+
     const handleSubmit = async (formData) => {
-        console.log(pageId, formData);
-        // Update API will be connected next
-        onClose();
-        onSuccess?.();
+
+        try {
+
+            setLoading(true);
+
+            await updatePage(pageId, formData);
+
+            toast.success("Page updated successfully.");
+
+            onClose();
+
+            onSuccess?.();
+
+        } catch (error) {
+
+            toast.error(
+                error.response?.data?.message ??
+                "Unable to update page."
+            );
+
+        } finally {
+
+            setLoading(false);
+
+        }
+
     };
 
     return (
@@ -38,7 +109,7 @@ const EditPageDialog = ({
             disableEnforceFocus
             PaperProps={{
                 sx: {
-                    width: 960,
+                    width: 1100,
                     maxWidth: "95vw",
                     borderRadius: 4,
                     overflow: "hidden",
@@ -55,26 +126,30 @@ const EditPageDialog = ({
             }}
         >
 
-            {/* ── Header ── */}
             <DialogTitle
                 sx={{
                     m: 0,
                     p: 0,
-                    position: "relative",
-                    overflow: "hidden",
                 }}
             >
+
                 <Box
                     sx={{
                         bgcolor: "primary.main",
                         px: 3.5,
                         py: 2.5,
                         display: "flex",
-                        alignItems: "center",
                         justifyContent: "space-between",
+                        alignItems: "center",
                     }}
                 >
-                    <Stack direction="row" alignItems="center" spacing={1.5}>
+
+                    <Stack
+                        direction="row"
+                        spacing={1.5}
+                        alignItems="center"
+                    >
+
                         <Box
                             sx={{
                                 width: 36,
@@ -86,63 +161,89 @@ const EditPageDialog = ({
                                 justifyContent: "center",
                             }}
                         >
-                            <EditNoteIcon sx={{ fontSize: 20, color: "#fff" }} />
+
+                            <EditNoteIcon
+                                sx={{
+                                    color: "#fff",
+                                }}
+                            />
+
                         </Box>
+
                         <Box>
+
                             <Typography
                                 sx={{
                                     color: "#fff",
-                                    fontSize: 18,
+                                    fontSize: 20,
                                     fontWeight: 700,
-                                    lineHeight: 1.2,
-                                    letterSpacing: -0.2,
                                 }}
                             >
+
                                 Edit Page
+
                             </Typography>
+
                             <Typography
                                 sx={{
-                                    color: alpha("#fff", 0.7),
-                                    fontSize: 12,
-                                    fontWeight: 400,
-                                    mt: 0.2,
+                                    color: alpha("#fff", 0.75),
+                                    fontSize: 13,
                                 }}
                             >
-                                Modify the page details and content
+
+                                Update page details
+
                             </Typography>
+
                         </Box>
+
                     </Stack>
 
                     <IconButton
                         onClick={onClose}
-                        size="small"
                         sx={{
-                            color: alpha("#fff", 0.8),
-                            "&:hover": {
-                                bgcolor: alpha("#fff", 0.15),
-                                color: "#fff",
-                            },
+                            color: "#fff",
                         }}
                     >
-                        <CloseIcon fontSize="small" />
+
+                        <CloseIcon />
+
                     </IconButton>
+
                 </Box>
+
             </DialogTitle>
 
-            {/* ── Body ── */}
             <DialogContent
                 sx={{
-                    p: 0,
+                    p: 3,
                     bgcolor: "#f8f9fc",
                 }}
             >
-                <Box sx={{ p: 3.5 }}>
+
+                {loading && !page ? (
+
+                    <Box
+                        display="flex"
+                        justifyContent="center"
+                        py={10}
+                    >
+
+                        <CircularProgress />
+
+                    </Box>
+
+                ) : (
+
                     <PageForm
-                        loading={false}
+                        initialValues={page}
+                        loading={loading}
                         onSubmit={handleSubmit}
                         onCancel={onClose}
                     />
-                </Box>
+
+                )}
+
             </DialogContent>
 
         </Dialog>
