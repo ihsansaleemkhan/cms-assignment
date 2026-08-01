@@ -1,348 +1,415 @@
 # CMS Assignment Backend
 
-A RESTful Content Management System (CMS) Backend built with **Laravel 12**. This project provides secure authentication, role-based access control, menu management, page management, role management, user management, file uploads, and interactive API documentation using Swagger/OpenAPI.
+Production-minded REST API for a bilingual content-management system built with **Laravel 12**. The backend provides Sanctum authentication, data-driven roles and permissions, nested menus, page publishing, audit metadata, trash management, public content APIs, image uploads, Swagger/OpenAPI documentation, and automated-test support.
 
----
+## Current Features
 
-## Features
-
-- Laravel 12.x REST API
-- Laravel Sanctum Authentication
-- Role & Permission Management (Spatie Laravel Permission)
-- User Management
-- Menu Management (Nested Menus)
-- Page Management
-- Image Upload Support
-- Pagination
-- Search & Filtering
-- Form Request Validation
-- API Resources
-- Soft Deletes
-- OpenAPI / Swagger Documentation
-- Standard JSON API Responses
-
----
+- Laravel 12 REST APIs with consistent JSON responses
+- Laravel Sanctum bearer-token authentication
+- Role and permission management using Spatie Laravel Permission
+- Users, roles, permissions, menus, pages, and dashboard APIs
+- Sortable, nested menus
+- Page drafts and published content
+- Optional publish date with public query-time publishing checks
+- Cover-image uploads and public storage URLs
+- Pagination, title search, menu filtering, and status filtering
+- Form Request validation and API Resources
+- Audit metadata for pages and menus:
+  - `created_by`
+  - `updated_by`
+  - `deleted_by`
+  - timestamps
+- Soft-delete trash APIs with restore and permanent deletion
+- Admin-only trash permissions
+- Public menu and page APIs that return only active, published, due content
+- Bilingual English and Arabic fields for menus and pages
+- Swagger/OpenAPI documentation served from the application
+- Seeders and factories
 
 ## Tech Stack
 
 - PHP 8.2+
 - Laravel 12.x
-- MySQL
+- MySQL or PostgreSQL
 - Laravel Sanctum
 - Spatie Laravel Permission
 - L5 Swagger
+- PHPUnit or Pest-compatible Laravel test setup
 - Composer
 
----
-
-# Installation
-
-Clone the repository
+## Installation
 
 ```bash
 git clone https://github.com/ihsansaleemkhan/cms-assignment.git
 cd cms-assignment-backend
-```
-
-Install dependencies
-
-```bash
 composer install
 ```
 
-Copy environment file
+Copy the environment file and generate the application key:
 
 ```bash
 cp .env.example .env
-```
-
-Generate application key
-
-```bash
 php artisan key:generate
 ```
 
-Configure your database inside `.env`
+Configure the database in `.env`:
 
-Run migrations and seeders
+```env
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=cms_assignment
+DB_USERNAME=root
+DB_PASSWORD=
+```
+
+Run migrations and seeders:
 
 ```bash
 php artisan migrate --seed
 ```
 
-Create storage symlink
+Create the public storage symlink:
 
 ```bash
 php artisan storage:link
 ```
 
-Generate Swagger documentation
+Generate Swagger documentation:
 
 ```bash
 php artisan l5-swagger:generate
 ```
 
-Start the server
+Start the backend:
 
 ```bash
 php artisan serve
 ```
 
----
+Default local URL:
 
-# Authentication
-
-Authentication is implemented using **Laravel Sanctum**.
-
-Login endpoint
-
+```text
+http://127.0.0.1:8000
 ```
+
+## Seeded Administrator
+
+| Role | Email | Password |
+|---|---|---|
+| System Administrator | `admin@cms.com` | `Password@123` |
+
+Use the seeded administrator to access all management, audit-metadata, restore, and force-delete features.
+
+## Authentication
+
+Login:
+
+```http
 POST /api/login
 ```
 
-After successful login, include the returned token in every protected request.
+Example body:
 
+```json
+{
+  "email": "admin@cms.com",
+  "password": "Password@123"
+}
 ```
+
+Use the returned token for protected APIs:
+
+```http
 Authorization: Bearer YOUR_ACCESS_TOKEN
+Accept: application/json
 ```
 
----
+Other authentication endpoints:
 
-# API Documentation
+| Method | Endpoint | Description |
+|---|---|---|
+| POST | `/api/login` | Sign in and create a Sanctum token |
+| GET | `/api/me` | Get the authenticated user and permissions |
+| POST | `/api/logout` | Revoke the current token |
 
-Swagger UI
+## Swagger / OpenAPI
 
-```
+Open Swagger UI at:
+
+```text
 http://127.0.0.1:8000/api/documentation
 ```
 
-Regenerate documentation after modifying annotations
+Regenerate documentation after changing annotations:
 
 ```bash
 php artisan l5-swagger:generate
 ```
 
----
+## Main Protected APIs
 
-# API Endpoints
-
-## Authentication
+### Dashboard
 
 | Method | Endpoint |
-|---------|----------|
-| POST | /api/login |
-| GET | /api/me |
-| POST | /api/logout |
+|---|---|
+| GET | `/api/dashboard` |
 
----
+### Menus
 
-## Menus
+| Method | Endpoint | Description |
+|---|---|---|
+| GET | `/api/menus` | Paginated menu list |
+| GET | `/api/menus/all` | Menu tree/options list |
+| POST | `/api/menus` | Create a menu |
+| GET | `/api/menus/{menu}` | View a menu |
+| PUT/PATCH | `/api/menus/{menu}` | Update a menu |
+| DELETE | `/api/menus/{menu}` | Soft-delete a menu |
+| PUT | `/api/menus/reorder` | Update menu nesting and sort order |
 
-| Method | Endpoint |
-|---------|----------|
-| GET | /api/menus |
-| POST | /api/menus |
-| GET | /api/menus/{id} |
-| PUT | /api/menus/{id} |
-| DELETE | /api/menus/{id} |
+Menus support:
 
-Supports
+- Nested parent/child relationships
+- Sort order
+- Active/inactive state
+- English `title`
+- Arabic `title_ar`
+- Slug
+- Audit metadata
 
-- Nested menus
-- Search
+### Menu Trash
+
+| Method | Endpoint | Permission |
+|---|---|---|
+| GET | `/api/menus/trash` | `menu.trash.view` |
+| POST | `/api/menus/{id}/restore` | `menu.restore` |
+| DELETE | `/api/menus/{id}/force-delete` | `menu.force_delete` |
+
+### Pages
+
+| Method | Endpoint | Description |
+|---|---|---|
+| GET | `/api/pages` | Paginated, searchable, filterable page list |
+| POST | `/api/pages` | Create a page |
+| GET | `/api/pages/{page}` | View a page |
+| PUT/PATCH | `/api/pages/{page}` | Update a page |
+| DELETE | `/api/pages/{page}` | Soft-delete a page |
+
+Page fields include:
+
+- `menu_id`
+- `title`
+- `title_ar`
+- `slug`
+- `body`
+- `body_ar`
+- `cover_image`
+- `status` (`draft` or `published`)
+- `publish_date`
+- `created_by`
+- `updated_by`
+- `deleted_by`
+- timestamps
+
+The page list supports:
+
 - Pagination
-
----
-
-## Pages
-
-| Method | Endpoint |
-|---------|----------|
-| GET | /api/pages |
-| POST | /api/pages |
-| GET | /api/pages/{id} |
-| PUT | /api/pages/{id} |
-| DELETE | /api/pages/{id} |
-
-Supports
-
-- Image upload
-- Search
+- Search by title
 - Menu filtering
 - Status filtering
-- Pagination
 
----
+### Page Trash
 
-## Roles
+| Method | Endpoint | Permission |
+|---|---|---|
+| GET | `/api/pages/trash` | `page.trash.view` |
+| POST | `/api/pages/{id}/restore` | `page.restore` |
+| DELETE | `/api/pages/{id}/force-delete` | `page.force_delete` |
 
-| Method | Endpoint |
-|---------|----------|
-| GET | /api/roles |
-| POST | /api/roles |
-| GET | /api/roles/{id} |
-| PUT | /api/roles/{id} |
-| DELETE | /api/roles/{id} |
-
-Supports
-
-- Permission assignment
-- Search
-- Pagination
-
----
-
-## Users
+### Users
 
 | Method | Endpoint |
-|---------|----------|
-| GET | /api/users |
-| POST | /api/users |
-| GET | /api/users/{id} |
-| PUT | /api/users/{id} |
-| DELETE | /api/users/{id} |
+|---|---|
+| GET | `/api/users` |
+| POST | `/api/users` |
+| GET | `/api/users/{user}` |
+| PUT/PATCH | `/api/users/{user}` |
+| DELETE | `/api/users/{user}` |
 
-Supports
+### Roles
 
-- Role assignment
-- Search
-- Pagination
+| Method | Endpoint |
+|---|---|
+| GET | `/api/roles` |
+| POST | `/api/roles` |
+| GET | `/api/roles/{role}` |
+| PUT/PATCH | `/api/roles/{role}` |
+| DELETE | `/api/roles/{role}` |
 
----
+### Permissions
 
-# Role Based Access Control
+| Method | Endpoint |
+|---|---|
+| GET | `/api/permissions` |
 
-Implemented using **Spatie Laravel Permission**.
+## Public APIs
 
-Permissions include:
+Public endpoints do not require authentication. They return only publicly available content.
 
-- menu.view
-- menu.create
-- menu.edit
-- menu.delete
+| Method | Endpoint | Description |
+|---|---|---|
+| GET | `/api/public/menus` | Active nested menus with published, due pages |
+| GET | `/api/public/pages` | Paginated published, due pages |
+| GET | `/api/public/pages/{slug}` | One published, due page by slug |
 
-- page.view
-- page.create
-- page.edit
-- page.delete
+A page is publicly visible only when:
 
-- role.view
-- role.create
-- role.edit
-- role.delete
+- `status` is `published`
+- it is not soft-deleted
+- its menu is active and not soft-deleted
+- `publish_date` is null or less than/equal to the current time
 
-- user.view
-- user.create
-- user.edit
-- user.delete
+## Roles and Permissions
 
----
+Privileges are stored in the database and checked by permission name. Controllers and routes do not rely on hard-coded role-name checks.
 
-# Validation
-
-Validation is implemented using dedicated Form Request classes.
-
-- LoginRequest
-- StoreMenuRequest
-- UpdateMenuRequest
-- StorePageRequest
-- UpdatePageRequest
-- StoreRoleRequest
-- UpdateRoleRequest
-- StoreUserRequest
-- UpdateUserRequest
-
----
-
-# Project Structure
-
-```
-app/
- ├── Http/
- │    ├── Controllers/
- │    ├── Requests/
- │    ├── Resources/
- ├── Models/
-database/
- ├── migrations/
- ├── seeders/
-routes/
- ├── api.php
-```
-
----
-
-# Default Seed Data
-
-The database seeder creates the following default data:
-
-## Roles
+Seeded roles:
 
 - System Administrator
 - Content Manager
-- Content Moderator
+- Moderator
 - Viewer
 
-## Permissions
+Core permissions:
 
-The following permission groups are seeded:
+```text
+dashboard.view
 
-- Dashboard Permissions
-- Menu Permissions
-- Page Permissions
-- User Permissions
-- Role Permissions
+menu.view
+menu.create
+menu.edit
+menu.delete
+menu.trash.view
+menu.restore
+menu.force_delete
 
-## Default Users
+page.view
+page.create
+page.edit
+page.delete
+page.trash.view
+page.restore
+page.force_delete
 
-| Role | Email | Password |
-|------|--------|----------|
-| System Administrator | admin@cms.com | Password@123 |
-| Content Manager | manager@cms.com | Password@123 |
-| Content Moderator | moderator@cms.com | Password@123 |
-| Viewer | viewer@cms.com | Password@123 |
+user.view
+user.create
+user.edit
+user.delete
 
-Run the following command to create the default roles, permissions, and users:
-
-```bash
-php artisan migrate --seed
+role.view
+role.create
+role.edit
+role.delete
 ```
 
----
+The System Administrator receives all seeded permissions. Trash restore and force-delete permissions are not assigned to the other default roles.
 
-# Error Handling
+## Audit and Trash Behavior
 
-The API returns consistent JSON responses for
+Pages and menus populate audit fields automatically through model events:
 
-- 401 Unauthorized
-- 403 Forbidden
-- 404 Not Found
-- 422 Validation Errors
-- 500 Internal Server Error
+- On create: `created_by` and `updated_by`
+- On update: `updated_by`
+- On soft delete: `deleted_by`
 
----
+Deleting a record does not immediately remove it from the database. Administrators can restore it or permanently delete it through the dedicated trash endpoints.
 
-# Assignment Highlights
+This implementation provides record-level audit metadata. It is not a full historical change-log table containing every previous field value.
 
-- Laravel 12
-- RESTful API Design
-- Sanctum Authentication
-- RBAC using Spatie Permission
-- CRUD for Menus
-- CRUD for Pages
-- CRUD for Roles
-- CRUD for Users
-- OpenAPI Documentation
-- Image Uploads
-- Pagination
-- Search & Filtering
-- Soft Deletes
-- Clean Architecture using Resources and Form Requests
+## Bilingual Content
 
----
+Menus and pages support optional Arabic fields:
 
-# Author
+```text
+menus.title_ar
+pages.title_ar
+pages.body_ar
+```
 
-**Mohomed Ihsan Saleemkhan**
+English fields remain required. The consuming frontend falls back to English when an Arabic value is empty.
 
+## Validation and Resources
+
+Dedicated Form Requests validate management operations, including:
+
+- Login
+- Menu create/update
+- Page create/update
+- Role create/update
+- User create/update
+
+API Resources shape protected, trash, and public responses consistently.
+
+## Automated Tests
+
+Run the test suite with:
+
+```bash
+php artisan test
+```
+
+Recommended feature-test coverage includes:
+
+- Successful and failed authentication
+- Unauthenticated access rejection
+- Permission enforcement
+- Moderator cannot delete a page
+- Non-admin cannot access trash endpoints
+- Admin can list, restore, and force-delete trashed pages and menus
+- Audit fields are populated
+- Future-dated pages are hidden from public APIs
+- Published due pages are publicly visible
+- Arabic fields are returned correctly
+
+## Useful Commands
+
+```bash
+php artisan optimize:clear
+php artisan permission:cache-reset
+php artisan l5-swagger:generate
+php artisan route:list
+php artisan test
+```
+
+## Project Structure
+
+```text
+app/
+├── Http/
+│   ├── Controllers/Api/
+│   ├── Requests/
+│   └── Resources/
+├── Models/
+
+database/
+├── factories/
+├── migrations/
+└── seeders/
+
+routes/
+├── api.php
+└── web.php
+```
+
+## Remaining Planned Work
+
+The following assignment items should be documented here after implementation:
+
+- Scheduled publishing Artisan command and scheduler configuration
+- Final expanded feature-test coverage
+- Optional mobile client
+
+## Author
+
+**Mohomed Ihsan Saleemkhan**  
 Senior Software Engineer
