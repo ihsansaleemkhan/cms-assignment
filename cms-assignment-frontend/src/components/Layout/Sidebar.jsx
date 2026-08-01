@@ -29,8 +29,6 @@ import usePermissions from "../../hooks/usePermissions";
 const drawerWidth = 250;
 const collapsedWidth = 72;
 
-const { hasPermission } = usePermissions();
-
 const menus = [
 
     {
@@ -75,6 +73,9 @@ const Sidebar = ({
     handleDrawerToggle,
     collapsed,
 }) => {
+
+    
+   const { hasPermission } = usePermissions();
 
     const theme = useTheme();
 

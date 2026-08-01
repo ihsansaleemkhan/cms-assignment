@@ -8,10 +8,15 @@ import {
     Button,
     Stack,
     Skeleton,
-    Alert,
+    InputAdornment,
+    alpha,
 } from "@mui/material";
 
-import AddIcon from "@mui/icons-material/Add";
+import {
+    Add,
+    Search,
+    MenuBook,
+} from "@mui/icons-material";
 
 import MenuTree from "../../components/Menu/MenuTree";
 
@@ -54,11 +59,8 @@ const MenuList = () => {
             setLoading(true);
 
             const response = await getMenus({
-
                 page: paginationModel.page + 1,
-
                 search,
-
             });
 
             setMenus(response.data);
@@ -89,11 +91,8 @@ const MenuList = () => {
     };
 
     const handleDelete = (menu) => {
-
         setSelectedMenu(menu);
-
         setOpenDelete(true);
-
     };
 
     const handleReorder = async (newMenus) => {
@@ -101,13 +100,9 @@ const MenuList = () => {
         try {
 
             const payload = newMenus.map((menu, index) => ({
-
                 id: menu.id,
-
                 parent_id: null,
-
                 sort_order: index + 1,
-
             }));
 
             await reorderMenus(payload);
@@ -128,64 +123,195 @@ const MenuList = () => {
     };
 
     useEffect(() => {
-
         loadMenus();
-
     }, [paginationModel, search]);
 
     return (
 
         <Box>
 
+            {/* ── Page Header ── */}
             <Stack
                 direction="row"
                 justifyContent="space-between"
-                alignItems="center"
-                mb={3}
+                alignItems="flex-end"
+                sx={{ mb: 4 }}
             >
+                <Box>
+                    <Box
+                        sx={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 1,
+                            mb: 0.5,
+                        }}
+                    >
+                        <Box
+                            sx={{
+                                width: 4,
+                                height: 26,
+                                borderRadius: 2,
+                                bgcolor: "primary.main",
+                            }}
+                        />
+                        <Typography
+                            variant="h4"
+                            sx={{
+                                fontWeight: 800,
+                                fontSize: 26,
+                                color: "text.primary",
+                                letterSpacing: -0.5,
+                            }}
+                        >
+                            Menu Management
+                        </Typography>
+                    </Box>
 
-                <Typography variant="h4">
-                    Menu Management
-                </Typography>
+                    <Typography
+                        variant="body2"
+                        sx={{
+                            color: "text.secondary",
+                            fontSize: 14,
+                            ml: 1.25,
+                        }}
+                    >
+                        Organize and manage your website navigation structure.
+                    </Typography>
+                </Box>
 
                 {hasPermission("menu.create") && (
-
                     <Button
                         variant="contained"
-                        startIcon={<AddIcon />}
+                        startIcon={<Add />}
                         onClick={() => setOpenCreate(true)}
+                        sx={{
+                            textTransform: "none",
+                            fontWeight: 700,
+                            borderRadius: 2,
+                            px: 3.5,
+                            py: 1.1,
+                            fontSize: 14,
+                            boxShadow: "0 2px 8px rgba(25,118,210,0.35)",
+                            "&:hover": {
+                                boxShadow: "0 4px 14px rgba(25,118,210,0.45)",
+                            },
+                        }}
                     >
                         Create Menu
                     </Button>
-
                 )}
-
             </Stack>
 
-            <Paper sx={{ p: 2 }}>
-
+            {/* ── Content Card ── */}
+            <Paper
+                elevation={0}
+                sx={{
+                    p: 3,
+                    borderRadius: 3,
+                    border: "1px solid",
+                    borderColor: "divider",
+                    bgcolor: "#fff",
+                }}
+            >
+                {/* ── Search Bar ── */}
                 <TextField
-                    label="Search..."
+                    placeholder="Search menus..."
+                    size="small"
                     fullWidth
-                    sx={{ mb: 2 }}
                     value={search}
-                    onChange={(e) =>
-                        setSearch(e.target.value)
-                    }
+                    onChange={(e) => setSearch(e.target.value)}
+                    InputProps={{
+                        startAdornment: (
+                            <InputAdornment position="start">
+                                <Search sx={{ fontSize: 20, color: "#9aa0aa" }} />
+                            </InputAdornment>
+                        ),
+                    }}
+                    sx={{
+                        mb: 3,
+                        maxWidth: 400,
+                        "& .MuiOutlinedInput-root": {
+                            borderRadius: 2.5,
+                            bgcolor: alpha("#000", 0.03),
+                            fontSize: 14,
+                            "&:hover": {
+                                bgcolor: alpha("#000", 0.05),
+                            },
+                            "&.Mui-focused": {
+                                bgcolor: "#fff",
+                                boxShadow: "0 0 0 3px rgba(25,118,210,0.1)",
+                            },
+                            "& fieldset": { borderColor: "transparent" },
+                            "&:hover fieldset": { borderColor: "transparent" },
+                            "&.Mui-focused fieldset": {
+                                borderColor: "primary.main",
+                                borderWidth: 1.5,
+                            },
+                        },
+                    }}
                 />
 
+                {/* ── State Rendering ── */}
                 {loading ? (
-                    <>
-                        <Skeleton height={55} />
-                        <Skeleton height={55} />
-                        <Skeleton height={55} />
-                        <Skeleton height={55} />
-                        <Skeleton height={55} />
-                    </>
+                    
+                    /* Skeleton Loader */
+                    <Stack spacing={1.5}>
+                        {[1, 2, 3].map((item) => (
+                            <Stack key={item} spacing={1}>
+                                <Skeleton 
+                                    height={52} 
+                                    sx={{ borderRadius: 2 }} 
+                                />
+                                {item < 3 && (
+                                    <Skeleton 
+                                        height={52} 
+                                        sx={{ borderRadius: 2, ml: 5, width: "85%" }} 
+                                    />
+                                )}
+                            </Stack>
+                        ))}
+                    </Stack>
+
                 ) : menus.length === 0 ? (
-                    <Alert severity="info">
-                        No menus found.
-                    </Alert>
+                    
+                    /* Empty State */
+                    <Box
+                        sx={{
+                            textAlign: "center",
+                            py: 8,
+                            px: 4,
+                        }}
+                    >
+                        <MenuBook
+                            sx={{
+                                fontSize: 56,
+                                color: "#e0e0e0",
+                                mb: 2,
+                            }}
+                        />
+                        <Typography
+                            sx={{
+                                fontWeight: 600,
+                                color: "text.secondary",
+                                mb: 0.5,
+                                fontSize: 16,
+                            }}
+                        >
+                            No menus found
+                        </Typography>
+                        <Typography
+                            variant="body2"
+                            sx={{
+                                color: "#9aa0aa",
+                                fontSize: 14,
+                                maxWidth: 300,
+                                mx: "auto",
+                            }}
+                        >
+                            Try adjusting your search or create a new menu to get started.
+                        </Typography>
+                    </Box>
+
                 ) : (
                     <MenuTree
                         menus={menus}
@@ -197,9 +323,9 @@ const MenuList = () => {
                         canDelete={hasPermission("menu.delete")}
                     />
                 )}
-
             </Paper>
 
+            {/* ── Dialogs ── */}
             <CreateMenuDialog
                 open={openCreate}
                 onClose={() => setOpenCreate(false)}
