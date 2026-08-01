@@ -18,6 +18,8 @@ import {
     MenuBook,
 } from "@mui/icons-material";
 
+import { toast } from "react-toastify";
+
 import MenuTree from "../../components/Menu/MenuTree";
 
 import {
@@ -28,12 +30,8 @@ import {
 import usePermissions from "../../hooks/usePermissions";
 
 import CreateMenuDialog from "../../components/Menu/CreateMenuDialog";
-
 import EditMenuDialog from "../../components/Menu/EditMenuDialog";
-
 import DeleteMenuDialog from "../../components/Menu/DeleteMenuDialog";
-
-import { toast } from "react-toastify";
 
 const MenuList = () => {
 
@@ -52,6 +50,16 @@ const MenuList = () => {
 
     const [totalRows, setTotalRows] = useState(0);
 
+    const [openCreate, setOpenCreate] = useState(false);
+
+    const [openEdit, setOpenEdit] = useState(false);
+
+    const [openDelete, setOpenDelete] = useState(false);
+
+    const [selectedMenu, setSelectedMenu] = useState(null);
+
+    const [selectedMenuId, setSelectedMenuId] = useState(null);
+
     const loadMenus = async () => {
 
         try {
@@ -63,9 +71,20 @@ const MenuList = () => {
                 search,
             });
 
-            setMenus(response.data);
+            setMenus(response.data ?? []);
 
-            setTotalRows(response.meta.total);
+            setTotalRows(response.meta?.total ?? 0);
+
+        } catch (error) {
+
+            toast.error(
+                error.response?.data?.message ??
+                "Unable to load menus."
+            );
+
+            setMenus([]);
+
+            setTotalRows(0);
 
         } finally {
 
@@ -75,41 +94,59 @@ const MenuList = () => {
 
     };
 
-    const [openCreate, setOpenCreate] = useState(false);
+    useEffect(() => {
 
-    const [openEdit, setOpenEdit] = useState(false);
+        loadMenus();
 
-    const [openDelete, setOpenDelete] = useState(false);
+    }, [
+        paginationModel.page,
+        search,
+    ]);
 
-    const [selectedMenu, setSelectedMenu] = useState(null);
+    useEffect(() => {
 
-    const [selectedMenuId, setSelectedMenuId] = useState(null);
+        setPaginationModel((previous) => ({
+            ...previous,
+            page: 0,
+        }));
+
+    }, [search]);
 
     const handleEdit = (id) => {
+
         setSelectedMenuId(id);
+
         setOpenEdit(true);
+
     };
 
     const handleDelete = (menu) => {
+
         setSelectedMenu(menu);
+
         setOpenDelete(true);
+
     };
 
     const handleReorder = async (newMenus) => {
 
         try {
 
-            const payload = newMenus.map((menu, index) => ({
-                id: menu.id,
-                parent_id: null,
-                sort_order: index + 1,
-            }));
+            const payload = newMenus.map(
+                (menu, index) => ({
+                    id: menu.id,
+                    parent_id: null,
+                    sort_order: index + 1,
+                })
+            );
 
             await reorderMenus(payload);
 
-            toast.success("Menu order updated");
+            toast.success(
+                "Menu order updated successfully."
+            );
 
-            loadMenus();
+            await loadMenus();
 
         } catch (error) {
 
@@ -122,22 +159,28 @@ const MenuList = () => {
 
     };
 
-    useEffect(() => {
-        loadMenus();
-    }, [paginationModel, search]);
-
     return (
 
         <Box>
 
-            {/* ── Page Header ── */}
+            {/* Page Header */}
+
             <Stack
-                direction="row"
+                direction={{
+                    xs: "column",
+                    sm: "row",
+                }}
                 justifyContent="space-between"
-                alignItems="flex-end"
+                alignItems={{
+                    xs: "stretch",
+                    sm: "flex-end",
+                }}
+                spacing={2}
                 sx={{ mb: 4 }}
             >
+
                 <Box>
+
                     <Box
                         sx={{
                             display: "flex",
@@ -146,6 +189,7 @@ const MenuList = () => {
                             mb: 0.5,
                         }}
                     >
+
                         <Box
                             sx={{
                                 width: 4,
@@ -154,6 +198,7 @@ const MenuList = () => {
                                 bgcolor: "primary.main",
                             }}
                         />
+
                         <Typography
                             variant="h4"
                             sx={{
@@ -165,6 +210,7 @@ const MenuList = () => {
                         >
                             Menu Management
                         </Typography>
+
                     </Box>
 
                     <Typography
@@ -175,15 +221,19 @@ const MenuList = () => {
                             ml: 1.25,
                         }}
                     >
-                        Organize and manage your website navigation structure.
+                        Manage English and Arabic website navigation.
                     </Typography>
+
                 </Box>
 
                 {hasPermission("menu.create") && (
+
                     <Button
                         variant="contained"
                         startIcon={<Add />}
-                        onClick={() => setOpenCreate(true)}
+                        onClick={() =>
+                            setOpenCreate(true)
+                        }
                         sx={{
                             textTransform: "none",
                             fontWeight: 700,
@@ -191,58 +241,92 @@ const MenuList = () => {
                             px: 3.5,
                             py: 1.1,
                             fontSize: 14,
-                            boxShadow: "0 2px 8px rgba(25,118,210,0.35)",
+                            boxShadow:
+                                "0 2px 8px rgba(25,118,210,0.35)",
+
                             "&:hover": {
-                                boxShadow: "0 4px 14px rgba(25,118,210,0.45)",
+                                boxShadow:
+                                    "0 4px 14px rgba(25,118,210,0.45)",
                             },
                         }}
                     >
                         Create Menu
                     </Button>
+
                 )}
+
             </Stack>
 
-            {/* ── Content Card ── */}
+            {/* Content Card */}
+
             <Paper
                 elevation={0}
                 sx={{
-                    p: 3,
+                    p: {
+                        xs: 2,
+                        sm: 3,
+                    },
                     borderRadius: 3,
                     border: "1px solid",
                     borderColor: "divider",
                     bgcolor: "#fff",
                 }}
             >
-                {/* ── Search Bar ── */}
+
+                {/* Search */}
+
                 <TextField
-                    placeholder="Search menus..."
+                    placeholder="Search English title, Arabic title or slug..."
                     size="small"
                     fullWidth
                     value={search}
-                    onChange={(e) => setSearch(e.target.value)}
+                    onChange={(event) =>
+                        setSearch(event.target.value)
+                    }
                     InputProps={{
                         startAdornment: (
+
                             <InputAdornment position="start">
-                                <Search sx={{ fontSize: 20, color: "#9aa0aa" }} />
+
+                                <Search
+                                    sx={{
+                                        fontSize: 20,
+                                        color: "#9aa0aa",
+                                    }}
+                                />
+
                             </InputAdornment>
+
                         ),
                     }}
                     sx={{
                         mb: 3,
-                        maxWidth: 400,
+                        maxWidth: 500,
+
                         "& .MuiOutlinedInput-root": {
                             borderRadius: 2.5,
                             bgcolor: alpha("#000", 0.03),
                             fontSize: 14,
+
                             "&:hover": {
-                                bgcolor: alpha("#000", 0.05),
+                                bgcolor:
+                                    alpha("#000", 0.05),
                             },
+
                             "&.Mui-focused": {
                                 bgcolor: "#fff",
-                                boxShadow: "0 0 0 3px rgba(25,118,210,0.1)",
+                                boxShadow:
+                                    "0 0 0 3px rgba(25,118,210,0.1)",
                             },
-                            "& fieldset": { borderColor: "transparent" },
-                            "&:hover fieldset": { borderColor: "transparent" },
+
+                            "& fieldset": {
+                                borderColor: "transparent",
+                            },
+
+                            "&:hover fieldset": {
+                                borderColor: "transparent",
+                            },
+
                             "&.Mui-focused fieldset": {
                                 borderColor: "primary.main",
                                 borderWidth: 1.5,
@@ -251,30 +335,53 @@ const MenuList = () => {
                     }}
                 />
 
-                {/* ── State Rendering ── */}
+                {/* State Rendering */}
+
                 {loading ? (
-                    
-                    /* Skeleton Loader */
+
                     <Stack spacing={1.5}>
+
                         {[1, 2, 3].map((item) => (
-                            <Stack key={item} spacing={1}>
-                                <Skeleton 
-                                    height={52} 
-                                    sx={{ borderRadius: 2 }} 
+
+                            <Stack
+                                key={item}
+                                spacing={1}
+                            >
+
+                                <Skeleton
+                                    height={72}
+                                    sx={{
+                                        borderRadius: 2,
+                                    }}
                                 />
+
                                 {item < 3 && (
-                                    <Skeleton 
-                                        height={52} 
-                                        sx={{ borderRadius: 2, ml: 5, width: "85%" }} 
+
+                                    <Skeleton
+                                        height={72}
+                                        sx={{
+                                            borderRadius: 2,
+                                            ml: {
+                                                xs: 2,
+                                                sm: 5,
+                                            },
+                                            width: {
+                                                xs: "92%",
+                                                sm: "85%",
+                                            },
+                                        }}
                                     />
+
                                 )}
+
                             </Stack>
+
                         ))}
+
                     </Stack>
 
                 ) : menus.length === 0 ? (
-                    
-                    /* Empty State */
+
                     <Box
                         sx={{
                             textAlign: "center",
@@ -282,6 +389,7 @@ const MenuList = () => {
                             px: 4,
                         }}
                     >
+
                         <MenuBook
                             sx={{
                                 fontSize: 56,
@@ -289,6 +397,7 @@ const MenuList = () => {
                                 mb: 2,
                             }}
                         />
+
                         <Typography
                             sx={{
                                 fontWeight: 600,
@@ -299,43 +408,59 @@ const MenuList = () => {
                         >
                             No menus found
                         </Typography>
+
                         <Typography
                             variant="body2"
                             sx={{
                                 color: "#9aa0aa",
                                 fontSize: 14,
-                                maxWidth: 300,
+                                maxWidth: 360,
                                 mx: "auto",
                             }}
                         >
-                            Try adjusting your search or create a new menu to get started.
+                            Try another English or Arabic search term,
+                            or create a new menu.
                         </Typography>
+
                     </Box>
 
                 ) : (
+
                     <MenuTree
                         menus={menus}
                         loading={loading}
                         onEdit={handleEdit}
                         onDelete={handleDelete}
                         onReorder={handleReorder}
-                        canEdit={hasPermission("menu.edit")}
-                        canDelete={hasPermission("menu.delete")}
+                        canEdit={
+                            hasPermission("menu.edit")
+                        }
+                        canDelete={
+                            hasPermission("menu.delete")
+                        }
                     />
+
                 )}
+
             </Paper>
 
-            {/* ── Dialogs ── */}
+            {/* Dialogs */}
+
             <CreateMenuDialog
                 open={openCreate}
-                onClose={() => setOpenCreate(false)}
+                onClose={() =>
+                    setOpenCreate(false)
+                }
                 onSuccess={loadMenus}
             />
 
             <EditMenuDialog
                 open={openEdit}
                 menuId={selectedMenuId}
-                onClose={() => setOpenEdit(false)}
+                onClose={() => {
+                    setOpenEdit(false);
+                    setSelectedMenuId(null);
+                }}
                 onSuccess={loadMenus}
             />
 
@@ -343,7 +468,10 @@ const MenuList = () => {
                 open={openDelete}
                 menuId={selectedMenu?.id}
                 menuTitle={selectedMenu?.title}
-                onClose={() => setOpenDelete(false)}
+                onClose={() => {
+                    setOpenDelete(false);
+                    setSelectedMenu(null);
+                }}
                 onSuccess={loadMenus}
             />
 
