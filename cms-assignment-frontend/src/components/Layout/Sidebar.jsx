@@ -24,36 +24,50 @@ import { NavLink } from "react-router-dom";
 
 import { useTheme } from "@mui/material/styles";
 import useMediaQuery from "@mui/material/useMediaQuery";
+import usePermissions from "../../hooks/usePermissions";
 
 const drawerWidth = 250;
 const collapsedWidth = 72;
 
+const { hasPermission } = usePermissions();
+
 const menus = [
+
     {
         text: "Dashboard",
         icon: <Dashboard />,
         path: "/dashboard",
+        permission: "dashboard.view",
     },
+
     {
         text: "Menu",
         icon: <MenuBook />,
         path: "/menus",
+        permission: "menu.view",
     },
+
     {
         text: "Pages",
         icon: <Description />,
         path: "/pages",
+        permission: "page.view",
     },
+
     {
         text: "Roles & Permissions",
         icon: <Security />,
         path: "/roles",
+        permission: "role.view",
     },
+
     {
         text: "Users",
         icon: <People />,
         path: "/users",
+        permission: "user.view",
     },
+
 ];
 
 const Sidebar = ({
@@ -110,7 +124,9 @@ const Sidebar = ({
                 }}
             >
 
-                {menus.map((menu) => (
+                {menus
+                .filter(menu => hasPermission(menu.permission))
+                .map(menu => (
 
                     <Tooltip
                         key={menu.text}

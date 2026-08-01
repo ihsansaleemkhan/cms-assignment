@@ -11,6 +11,9 @@ import Profile from "../pages/Profile/Profile";
 import ProtectedRoute from "../components/Common/ProtectedRoute";
 import AdminLayout from "../layouts/AdminLayout";
 
+import PermissionRoute from "../components/Common/PermissionRoute";
+import Forbidden from "../pages/Common/Forbidden";
+
 const AppRoutes = () => {
     return (
         <Routes>
@@ -38,32 +41,57 @@ const AppRoutes = () => {
 
                     <Route
                         path="/dashboard"
-                        element={<Dashboard />}
+                        element={
+                            <PermissionRoute permission="dashboard.view">
+                                <Dashboard />
+                            </PermissionRoute>
+                        }
                     />
 
                     <Route
                         path="/menus"
-                        element={<MenuList />}
+                        element={
+                            <PermissionRoute permission="menu.view">
+                                <MenuList />
+                            </PermissionRoute>
+                        }
                     />
 
                     <Route
                         path="/pages"
-                        element={<PagesList />}
+                        element={
+                            <PermissionRoute permission="page.view">
+                                <PagesList />
+                            </PermissionRoute>
+                        }
                     />
 
                     <Route
                         path="/users"
-                        element={<UserList />}
+                        element={
+                            <PermissionRoute permission="user.view">
+                                <UserList />
+                            </PermissionRoute>
+                        }
                     />
 
                     <Route
                         path="/roles"
-                        element={<RoleList />}
+                        element={
+                            <PermissionRoute permission="role.view">
+                                <RoleList />
+                            </PermissionRoute>
+                        }
                     />
 
                     <Route
                         path="/profile"
                         element={<Profile />}
+                    />
+
+                    <Route
+                        path="/403"
+                        element={<Forbidden />}
                     />
 
                 </Route>
