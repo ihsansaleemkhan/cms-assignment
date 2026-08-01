@@ -880,6 +880,85 @@
                 ]
             }
         },
+        "/public/menus": {
+            "get": {
+                "tags": [
+                    "Public Content"
+                ],
+                "summary": "Get public menus",
+                "description": "Returns active nested menus with published pages whose publish date is due.",
+                "operationId": "getPublicMenus",
+                "responses": {
+                    "200": {
+                        "description": "Public menus retrieved successfully"
+                    }
+                }
+            }
+        },
+        "/public/pages": {
+            "get": {
+                "tags": [
+                    "Public Content"
+                ],
+                "summary": "List public pages",
+                "description": "Returns published pages that are due and belong to active menus.",
+                "operationId": "listPublicPages",
+                "parameters": [
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "description": "Search public pages by title",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "menu_id",
+                        "in": "query",
+                        "description": "Filter public pages by menu ID",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Public pages retrieved successfully"
+                    }
+                }
+            }
+        },
+        "/public/pages/{slug}": {
+            "get": {
+                "tags": [
+                    "Public Content"
+                ],
+                "summary": "Get public page by slug",
+                "description": "Returns one published and due page by slug.",
+                "operationId": "getPublicPage",
+                "parameters": [
+                    {
+                        "name": "slug",
+                        "in": "path",
+                        "description": "Public page slug",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Public page retrieved successfully"
+                    },
+                    "404": {
+                        "description": "Public page not found"
+                    }
+                }
+            }
+        },
         "/roles": {
             "get": {
                 "tags": [
@@ -1363,6 +1442,10 @@
         {
             "name": "Roles",
             "description": "Roles"
+        },
+        {
+            "name": "Public Content",
+            "description": "Public Content"
         }
     ]
 }

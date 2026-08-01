@@ -9,9 +9,21 @@ use App\Http\Controllers\Api\PageController;
 use App\Http\Controllers\Api\PermissionController;
 use App\Http\Controllers\Api\RoleController;
 use App\Http\Controllers\Api\UserController;
+use App\Http\Controllers\Api\PublicContentController;
 
+/*
+|--------------------------------------------------------------------------
+|login
+|--------------------------------------------------------------------------
+*/
 Route::post('/login', [AuthController::class, 'login']);
 
+
+/*
+|--------------------------------------------------------------------------
+|Admin API routes
+|--------------------------------------------------------------------------
+*/
 Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('/me', [AuthController::class, 'me']);
@@ -89,4 +101,30 @@ Route::middleware('auth:sanctum')->group(function () {
         '/permissions',
         [PermissionController::class, 'index']
     );
+});
+
+
+/*
+|--------------------------------------------------------------------------
+| Public content
+|--------------------------------------------------------------------------
+*/
+
+Route::prefix('public')->group(function () {
+
+    Route::get(
+        '/menus',
+        [PublicContentController::class, 'menus']
+    );
+
+    Route::get(
+        '/pages',
+        [PublicContentController::class, 'pages']
+    );
+
+    Route::get(
+        '/pages/{slug}',
+        [PublicContentController::class, 'show']
+    );
+
 });
