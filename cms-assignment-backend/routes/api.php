@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\PageController;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\RoleController;
 use App\Http\Controllers\Api\PermissionController;
+use App\Http\Controllers\Api\DashboardController;
 
 Route::post('/login', [AuthController::class, 'login']);
 
@@ -21,6 +22,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::put('/menus/reorder', [MenuController::class, 'reorder']);
 
+    Route::get('/dashboard', [DashboardController::class, 'index']);
 
     Route::apiResource('menus', MenuController::class);
     Route::apiResource('pages', PageController::class);

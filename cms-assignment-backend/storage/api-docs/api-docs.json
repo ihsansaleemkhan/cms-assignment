@@ -99,6 +99,29 @@
                 ]
             }
         },
+        "/dashboard": {
+            "get": {
+                "tags": [
+                    "Dashboard"
+                ],
+                "summary": "Dashboard Overview",
+                "description": "Returns dashboard statistics, page status, latest pages and latest users.",
+                "operationId": "dashboardOverview",
+                "responses": {
+                    "200": {
+                        "description": "Dashboard retrieved successfully"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
         "/menus": {
             "get": {
                 "tags": [
@@ -1118,6 +1141,10 @@
         {
             "name": "Authentication",
             "description": "Authentication"
+        },
+        {
+            "name": "Dashboard",
+            "description": "Dashboard"
         },
         {
             "name": "Menus",
