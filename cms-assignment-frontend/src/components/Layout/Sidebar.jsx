@@ -18,6 +18,7 @@ import {
     MenuBook,
     People,
     Security,
+    DeleteSweep 
 } from "@mui/icons-material";
 
 import { NavLink } from "react-router-dom";
@@ -58,12 +59,17 @@ const menus = [
         path: "/roles",
         permission: "role.view",
     },
-
     {
         text: "Users",
         icon: <People />,
         path: "/users",
         permission: "user.view",
+    },
+    {
+        text: "Audit & Trash",
+        icon: <DeleteSweep />,
+        path: "/audit-trash",
+        permission: "page.trash.view",
     },
 
 ];

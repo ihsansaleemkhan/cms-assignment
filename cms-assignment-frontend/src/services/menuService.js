@@ -65,3 +65,42 @@ export const reorderMenus = async (payload) => {
     return data;
 
 };
+
+/*
+|--------------------------------------------------------------------------
+| Menu Trash
+|--------------------------------------------------------------------------
+*/
+
+export const getDeletedMenus = async ({
+    page = 1,
+    search = "",
+} = {}) => {
+    const { data } = await api.get(
+        "/menus/trash",
+        {
+            params: {
+                page,
+                search,
+            },
+        }
+    );
+
+    return data;
+};
+
+export const restoreMenu = async (id) => {
+    const { data } = await api.post(
+        `/menus/${id}/restore`
+    );
+
+    return data;
+};
+
+export const forceDeleteMenu = async (id) => {
+    const { data } = await api.delete(
+        `/menus/${id}/force-delete`
+    );
+
+    return data;
+};

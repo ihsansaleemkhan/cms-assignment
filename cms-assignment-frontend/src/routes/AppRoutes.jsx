@@ -7,6 +7,7 @@ import PagesList from "../pages/Pages/PageList";
 import UserList from "../pages/Users/UserList";
 import RoleList from "../pages/Roles/RoleList";
 import Profile from "../pages/Profile/Profile";
+import AuditTrashList from "../pages/AuditTrash/AuditTrashList";
 
 import ProtectedRoute from "../components/Common/ProtectedRoute";
 import AdminLayout from "../layouts/AdminLayout";
@@ -80,6 +81,15 @@ const AppRoutes = () => {
                         element={
                             <PermissionRoute permission="role.view">
                                 <RoleList />
+                            </PermissionRoute>
+                        }
+                    />
+
+                    <Route
+                        path="/audit-trash"
+                        element={
+                            <PermissionRoute permission="page.trash.view">
+                                <AuditTrashList />
                             </PermissionRoute>
                         }
                     />

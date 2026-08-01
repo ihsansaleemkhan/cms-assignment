@@ -71,3 +71,47 @@ export const deletePage = async (id) => {
     return data;
 
 };
+
+
+/*
+|--------------------------------------------------------------------------
+| Page Trash
+|--------------------------------------------------------------------------
+*/
+
+export const getDeletedPages = async ({
+    page = 1,
+    search = "",
+    menu_id = "",
+    status = "",
+} = {}) => {
+    const { data } = await api.get(
+        "/pages/trash",
+        {
+            params: {
+                page,
+                search,
+                menu_id,
+                status,
+            },
+        }
+    );
+
+    return data;
+};
+
+export const restorePage = async (id) => {
+    const { data } = await api.post(
+        `/pages/${id}/restore`
+    );
+
+    return data;
+};
+
+export const forceDeletePage = async (id) => {
+    const { data } = await api.delete(
+        `/pages/${id}/force-delete`
+    );
+
+    return data;
+};
