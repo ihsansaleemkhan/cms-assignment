@@ -13,6 +13,7 @@ class Menu extends Model
     protected $fillable = [
         'parent_id',
         'title',
+        'title_ar',
         'slug',
         'sort_order',
         'is_active',

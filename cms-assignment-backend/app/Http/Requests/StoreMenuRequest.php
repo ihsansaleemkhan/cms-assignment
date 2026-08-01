@@ -19,6 +19,8 @@ class StoreMenuRequest extends FormRequest
 
             'title' => 'required|string|max:255',
 
+            'title_ar' => 'nullable|string|max:255',
+
             'slug' => 'required|string|max:255|unique:menus,slug',
 
             'sort_order' => 'nullable|integer',
@@ -32,6 +34,8 @@ class StoreMenuRequest extends FormRequest
         return [
 
             'title.required' => 'Menu title is required.',
+
+            'title_ar.string' => 'Arabic menu title must be valid text.',
 
             'slug.required' => 'Slug is required.',
 

@@ -166,6 +166,11 @@
                                         "type": "string",
                                         "example": "About Us"
                                     },
+                                    "title_ar": {
+                                        "type": "string",
+                                        "example": "من نحن",
+                                        "nullable": true
+                                    },
                                     "slug": {
                                         "type": "string",
                                         "example": "about-us"
@@ -263,6 +268,11 @@
                                     "title": {
                                         "type": "string",
                                         "example": "Updated Menu"
+                                    },
+                                    "title_ar": {
+                                        "type": "string",
+                                        "example": "القائمة المحدثة",
+                                        "nullable": true
                                     },
                                     "slug": {
                                         "type": "string",
@@ -570,6 +580,11 @@
                                         "type": "string",
                                         "example": "About Us"
                                     },
+                                    "title_ar": {
+                                        "type": "string",
+                                        "example": "من نحن",
+                                        "nullable": true
+                                    },
                                     "slug": {
                                         "type": "string",
                                         "example": "about-us"
@@ -577,6 +592,11 @@
                                     "body": {
                                         "type": "string",
                                         "example": "This is page content."
+                                    },
+                                    "body_ar": {
+                                        "type": "string",
+                                        "example": "<p>محتوى الصفحة باللغة العربية.</p>",
+                                        "nullable": true
                                     },
                                     "status": {
                                         "type": "string",
@@ -682,6 +702,11 @@
                                         "type": "string",
                                         "example": "Updated Page"
                                     },
+                                    "title_ar": {
+                                        "type": "string",
+                                        "example": "الصفحة المحدثة",
+                                        "nullable": true
+                                    },
                                     "slug": {
                                         "type": "string",
                                         "example": "updated-page"
@@ -689,6 +714,11 @@
                                     "body": {
                                         "type": "string",
                                         "example": "Updated page content."
+                                    },
+                                    "body_ar": {
+                                        "type": "string",
+                                        "example": "<p>محتوى الصفحة باللغة العربية.</p>",
+                                        "nullable": true
                                     },
                                     "status": {
                                         "type": "string",
@@ -907,7 +937,7 @@
                     {
                         "name": "search",
                         "in": "query",
-                        "description": "Search public pages by title",
+                        "description": "Search public pages by English title, Arabic title or slug",
                         "required": false,
                         "schema": {
                             "type": "string"

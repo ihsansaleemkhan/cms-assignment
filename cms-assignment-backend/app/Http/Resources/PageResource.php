@@ -19,9 +19,13 @@ class PageResource extends JsonResource
 
             'title' => $this->title,
 
+            'title_ar' => $this->title_ar,
+
             'slug' => $this->slug,
 
             'body' => $this->body,
+
+            'body_ar' => $this->body_ar,
 
             'cover_image' => $this->cover_image
                 ? asset('storage/' . $this->cover_image)

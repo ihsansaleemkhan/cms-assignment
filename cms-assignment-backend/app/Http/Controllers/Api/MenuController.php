@@ -88,6 +88,7 @@ class MenuController extends Controller implements HasMiddleware
             $query->where(function ($q) use ($search) {
 
                 $q->where('title','like',"%$search%")
+                ->orWhere('title_ar','like',"%{$search}%")
                 ->orWhere('slug','like',"%$search%")
                 ->orWhereHas('children', function ($child) use ($search){
 
@@ -122,6 +123,7 @@ class MenuController extends Controller implements HasMiddleware
             properties: [
                 new OA\Property(property: "parent_id", type: "integer", nullable: true, example: 1),
                 new OA\Property(property: "title", type: "string", example: "About Us"),
+                new OA\Property(property: "title_ar",type: "string",nullable: true,example: "من نحن"),
                 new OA\Property(property: "slug", type: "string", example: "about-us"),
                 new OA\Property(property: "is_active", type: "boolean", example: true),
             ]
@@ -145,6 +147,7 @@ class MenuController extends Controller implements HasMiddleware
 
         $menu = Menu::create([
             'title'      => $request->title,
+            'title_ar' => $request->title_ar,
             'slug'       => $request->slug,
             'parent_id'  => $request->parent_id,
             'sort_order' => $sortOrder,
@@ -223,6 +226,7 @@ class MenuController extends Controller implements HasMiddleware
             properties: [
                 new OA\Property(property: "parent_id", type: "integer", nullable: true, example: 1),
                 new OA\Property(property: "title", type: "string", example: "Updated Menu"),
+                new OA\Property(property: "title_ar",type: "string",nullable: true,example: "القائمة المحدثة"),
                 new OA\Property(property: "slug", type: "string", example: "updated-menu"),
                 new OA\Property(property: "is_active", type: "boolean", example: true),
             ]
@@ -242,6 +246,7 @@ class MenuController extends Controller implements HasMiddleware
         $menu->update([
             'parent_id' => $request->parent_id,
             'title' => $request->title,
+            'title_ar' => $request->title_ar,
             'slug' => $request->slug,
             'is_active' => $request->boolean('is_active'),
         ]);
@@ -432,6 +437,7 @@ class MenuController extends Controller implements HasMiddleware
             $query->where(function ($builder) use ($search) {
                 $builder
                     ->where('title', 'like', '%' . $search . '%')
+                    ->orWhere('title_ar', 'like', '%' . $search . '%')
                     ->orWhere('slug', 'like', '%' . $search . '%');
             });
         }

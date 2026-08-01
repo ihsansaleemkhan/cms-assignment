@@ -21,6 +21,8 @@ class PublicMenuResource extends JsonResource
 
             'title' => $this->title,
 
+            'title_ar' => $this->title_ar,
+
             'slug' => $this->slug,
 
             'sort_order' => $this->sort_order,

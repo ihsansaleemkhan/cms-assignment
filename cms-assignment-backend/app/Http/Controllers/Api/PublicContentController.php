@@ -34,11 +34,15 @@ class PublicContentController extends Controller
             ->where('is_active', true)
             ->with([
                 'pages' => function ($query) {
-                    $this->applyPublicPageScope($query)
+
+                    $this->applyPublicPageScope(
+                        $query
+                    )
                         ->select([
                             'id',
                             'menu_id',
                             'title',
+                            'title_ar',
                             'slug',
                             'cover_image',
                             'publish_date',
@@ -48,17 +52,22 @@ class PublicContentController extends Controller
                 },
 
                 'children' => function ($query) {
+
                     $query
                         ->where('is_active', true)
                         ->orderBy('sort_order');
                 },
 
                 'children.pages' => function ($query) {
-                    $this->applyPublicPageScope($query)
+
+                    $this->applyPublicPageScope(
+                        $query
+                    )
                         ->select([
                             'id',
                             'menu_id',
                             'title',
+                            'title_ar',
                             'slug',
                             'cover_image',
                             'publish_date',
@@ -70,7 +79,9 @@ class PublicContentController extends Controller
             ->orderBy('sort_order')
             ->get();
 
-        return PublicMenuResource::collection($menus);
+        return PublicMenuResource::collection(
+            $menus
+        );
     }
 
     /**
@@ -87,7 +98,7 @@ class PublicContentController extends Controller
         name: "search",
         in: "query",
         required: false,
-        description: "Search public pages by title",
+        description: "Search public pages by English title, Arabic title or slug",
         schema: new OA\Schema(type: "string")
     )]
     #[OA\Parameter(
@@ -105,7 +116,7 @@ class PublicContentController extends Controller
     {
         $query = Page::query()
             ->with([
-                'menu:id,title,slug,is_active',
+                'menu:id,title,title_ar,slug,is_active',
             ])
             ->whereHas('menu', function ($menuQuery) {
                 $menuQuery->where('is_active', true);
@@ -113,12 +124,29 @@ class PublicContentController extends Controller
 
         $this->applyPublicPageScope($query);
 
-        if ($request->filled('search')) {
-            $query->where(
-                'title',
-                'like',
-                '%' . $request->search . '%'
-            );
+       if ($request->filled('search')) {
+
+            $search = $request->search;
+
+            $query->where(function ($builder) use ($search) {
+
+                $builder
+                    ->where(
+                        'title',
+                        'like',
+                        '%' . $search . '%'
+                    )
+                    ->orWhere(
+                        'title_ar',
+                        'like',
+                        '%' . $search . '%'
+                    )
+                    ->orWhere(
+                        'slug',
+                        'like',
+                        '%' . $search . '%'
+                    );
+            });
         }
 
         if ($request->filled('menu_id')) {
@@ -166,7 +194,7 @@ class PublicContentController extends Controller
     {
         $query = Page::query()
             ->with([
-                'menu:id,title,slug,is_active',
+                'menu:id,title,title_ar,slug,is_active',
             ])
             ->where('slug', $slug)
             ->whereHas('menu', function ($menuQuery) {

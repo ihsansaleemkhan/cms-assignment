@@ -76,7 +76,9 @@ class PageController extends Controller implements HasMiddleware
 
         // Search by title
         if ($request->filled('search')) {
-            $query->where('title', 'like', '%' . $request->search . '%');
+            $query->where('title', 'like', '%' . $request->search . '%')
+            ->orWhere('title_ar','like','%' . $request->search . '%')
+            ->orWhere('slug','like','%' . $request->search . '%');
         }
 
         // Filter by menu
@@ -115,8 +117,10 @@ class PageController extends Controller implements HasMiddleware
                 properties: [
                     new OA\Property(property: "menu_id", type: "integer", example: 1),
                     new OA\Property(property: "title", type: "string", example: "About Us"),
+                    new OA\Property(property: "title_ar",type: "string",nullable: true,example: "من نحن"),
                     new OA\Property(property: "slug", type: "string", example: "about-us"),
                     new OA\Property(property: "body", type: "string", example: "This is page content."),
+                    new OA\Property(property: "body_ar",type: "string",nullable: true,example: "<p>محتوى الصفحة باللغة العربية.</p>"),
                     new OA\Property(property: "status", type: "string", example: "published"),
                     new OA\Property(property: "publish_date", type: "string", format: "date-time"),
                     new OA\Property(
@@ -227,8 +231,10 @@ class PageController extends Controller implements HasMiddleware
                 properties: [
                     new OA\Property(property: "menu_id", type: "integer", example: 1),
                     new OA\Property(property: "title", type: "string", example: "Updated Page"),
+                    new OA\Property(property: "title_ar", type: "string", nullable: true, example: "الصفحة المحدثة"),
                     new OA\Property(property: "slug", type: "string", example: "updated-page"),
                     new OA\Property(property: "body", type: "string", example: "Updated page content."),
+                    new OA\Property(property: "body_ar", type: "string", nullable: true, example: "<p>محتوى الصفحة باللغة العربية.</p>"),
                     new OA\Property(property: "status", type: "string", example: "draft"),
                     new OA\Property(property: "publish_date", type: "string", format: "date-time"),
                     new OA\Property(
@@ -351,11 +357,9 @@ class PageController extends Controller implements HasMiddleware
         ]);
 
         if ($request->filled('search')) {
-            $query->where(
-                'title',
-                'like',
-                '%' . $request->search . '%'
-            );
+            $query->where('title','like','%' . $request->search . '%')
+            ->orWhere('title_ar','like','%' . $request->search . '%')
+            ->orWhere('slug','like','%' . $request->search . '%');
         }
 
         if ($request->filled('menu_id')) {

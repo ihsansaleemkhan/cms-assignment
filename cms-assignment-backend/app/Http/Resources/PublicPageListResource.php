@@ -19,6 +19,8 @@ class PublicPageListResource extends JsonResource
 
             'title' => $this->title,
 
+            'title_ar' => $this->title_ar,
+
             'slug' => $this->slug,
 
             'cover_image' => $this->cover_image
@@ -33,6 +35,7 @@ class PublicPageListResource extends JsonResource
                     ? [
                         'id' => $this->menu->id,
                         'title' => $this->menu->title,
+                        'title_ar' => $this->menu->title_ar,
                         'slug' => $this->menu->slug,
                     ]
                     : null
