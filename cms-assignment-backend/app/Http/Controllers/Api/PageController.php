@@ -7,7 +7,6 @@ use App\Http\Requests\StorePageRequest;
 use App\Http\Requests\UpdatePageRequest;
 use App\Http\Resources\PageResource;
 use App\Models\Page;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Routing\Controllers\HasMiddleware;
@@ -64,7 +63,12 @@ class PageController extends Controller implements HasMiddleware
 
     public function index(Request $request)
     {
-        $query = Page::with('menu');
+        $query = Page::with([
+            'menu',
+            'creator:id,name,email',
+            'updater:id,name,email',
+            'deleter:id,name,email',
+        ]);
 
         // Search by title
         if ($request->filled('search')) {
@@ -143,13 +147,18 @@ class PageController extends Controller implements HasMiddleware
             $data['slug'] = Str::slug($data['title']);
         }
 
-        $data['created_by'] = Auth::id();
-
         $page = Page::create($data);
 
         return (new PageResource(
-            $page->load('menu')
-        ))->response()->setStatusCode(201);
+            $page->fresh()->load([
+                'menu',
+                'creator:id,name,email',
+                'updater:id,name,email',
+                'deleter:id,name,email',
+            ])
+        ))
+            ->response()
+            ->setStatusCode(201);
     }
 
     /**
@@ -180,7 +189,12 @@ class PageController extends Controller implements HasMiddleware
     public function show(Page $page)
     {
         return new PageResource(
-            $page->load('menu')
+            $page->load([
+                'menu',
+                'creator:id,name,email',
+                'updater:id,name,email',
+                'deleter:id,name,email',
+            ])
         );
     }
 
@@ -231,14 +245,17 @@ class PageController extends Controller implements HasMiddleware
         description: "Validation failed"
     )]
 
-    public function update(UpdatePageRequest $request, Page $page)
-    {
+    public function update(
+        UpdatePageRequest $request,
+        Page $page
+    ) {
         $data = $request->validated();
 
         if ($request->hasFile('cover_image')) {
 
             if ($page->cover_image) {
-                Storage::disk('public')->delete($page->cover_image);
+                Storage::disk('public')
+                    ->delete($page->cover_image);
             }
 
             $data['cover_image'] = $request
@@ -250,12 +267,15 @@ class PageController extends Controller implements HasMiddleware
             $data['slug'] = Str::slug($data['title']);
         }
 
-        $data['updated_by'] = Auth::id();
-
         $page->update($data);
 
         return new PageResource(
-            $page->fresh()->load('menu')
+            $page->fresh()->load([
+                'menu',
+                'creator:id,name,email',
+                'updater:id,name,email',
+                'deleter:id,name,email',
+            ])
         );
     }
 
@@ -285,14 +305,11 @@ class PageController extends Controller implements HasMiddleware
     )]
     public function destroy(Page $page)
     {
-        if ($page->cover_image) {
-            Storage::disk('public')->delete($page->cover_image);
-        }
-
         $page->delete();
 
         return response()->json([
-            'message' => 'Page deleted successfully.'
+            'success' => true,
+            'message' => 'Page moved to trash successfully.',
         ]);
     }
 }

@@ -47,8 +47,14 @@ class MenuController extends Controller implements HasMiddleware
 
     public function index()
     {
-        $query = Menu::with('children')
-            ->whereNull('parent_id');
+        $query = Menu::with([
+            'creator:id,name,email',
+            'updater:id,name,email',
+            'deleter:id,name,email',
+            'children.creator:id,name,email',
+            'children.updater:id,name,email',
+            'children.deleter:id,name,email',
+        ])->whereNull('parent_id');
 
         if (request()->filled('search')) {
 
@@ -121,7 +127,12 @@ class MenuController extends Controller implements HasMiddleware
         ]);
 
         return new MenuResource(
-            $menu->fresh()->load('children')
+            $menu->fresh()->load([
+                'children',
+                'creator:id,name,email',
+                'updater:id,name,email',
+                'deleter:id,name,email',
+            ])
         );
     }
 
@@ -152,7 +163,14 @@ class MenuController extends Controller implements HasMiddleware
 
     public function show(Menu $menu)
     {
-        $menu->load('children');
+        $menu->load([
+            'creator:id,name,email',
+            'updater:id,name,email',
+            'deleter:id,name,email',
+            'children.creator:id,name,email',
+            'children.updater:id,name,email',
+            'children.deleter:id,name,email',
+        ]);
 
         return new MenuResource($menu);
     }
@@ -204,7 +222,12 @@ class MenuController extends Controller implements HasMiddleware
         ]);
 
         return new MenuResource(
-            $menu->fresh()->load('children')
+            $menu->fresh()->load([
+                'children',
+                'creator:id,name,email',
+                'updater:id,name,email',
+                'deleter:id,name,email',
+            ])
         );
     }
 
@@ -237,8 +260,9 @@ class MenuController extends Controller implements HasMiddleware
         $menu->delete();
 
         return response()->json([
-            'message' => 'Menu deleted successfully.'
-        ], 200);
+            'success' => true,
+            'message' => 'Menu moved to trash successfully.',
+        ]);
     }
 
     /**
@@ -256,7 +280,14 @@ class MenuController extends Controller implements HasMiddleware
     )]
     public function all()
     {
-        $menus = Menu::with('children')
+        $menus = Menu::with([
+                'creator:id,name,email',
+                'updater:id,name,email',
+                'deleter:id,name,email',
+                'children.creator:id,name,email',
+                'children.updater:id,name,email',
+                'children.deleter:id,name,email',
+            ])
             ->whereNull('parent_id')
             ->orderBy('sort_order')
             ->get();
