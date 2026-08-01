@@ -23,15 +23,32 @@ import {
     getPublicMenus,
 } from "../services/publicService";
 
-const PublicLayout = () => {
+import {
+    LanguageProvider,
+    useLanguage,
+} from "../context/LanguageContext";
+
+const PublicLayoutContent = () => {
 
     const location = useLocation();
 
-    const [menus, setMenus] = useState([]);
+    const {
+        language,
+        isArabic,
+        direction,
+        toggleLanguage,
+    } = useLanguage();
 
-    const [loading, setLoading] = useState(true);
+    const [menus, setMenus] =
+        useState([]);
 
-    const [mobileOpen, setMobileOpen] = useState(false);
+    const [loading, setLoading] =
+        useState(true);
+
+    const [
+        mobileOpen,
+        setMobileOpen,
+    ] = useState(false);
 
     const loadMenus = async () => {
 
@@ -39,16 +56,25 @@ const PublicLayout = () => {
 
             setLoading(true);
 
-            const response = await getPublicMenus();
+            const response =
+                await getPublicMenus();
 
-            setMenus(response.data ?? []);
+            setMenus(
+                response.data ?? []
+            );
 
         } catch (error) {
 
             toast.error(
                 error.response?.data?.message ??
-                "Unable to load website navigation."
+                (
+                    isArabic
+                        ? "تعذر تحميل قائمة الموقع."
+                        : "Unable to load website navigation."
+                )
             );
+
+            setMenus([]);
 
         } finally {
 
@@ -76,23 +102,37 @@ const PublicLayout = () => {
     }, [location.pathname]);
 
     if (loading) {
-        return <LoadingPage />;
+
+        return (
+            <LoadingPage />
+        );
+
     }
 
     return (
 
         <Box
+            dir={direction}
             sx={{
                 minHeight: "100vh",
                 bgcolor: "#f7f8fb",
                 color: "#14213d",
                 display: "flex",
                 flexDirection: "column",
+
+                fontFamily: isArabic
+                    ? "'Noto Sans Arabic', 'Tahoma', Arial, sans-serif"
+                    : "inherit",
             }}
         >
 
             <PublicHeader
                 menus={menus}
+                language={language}
+                isArabic={isArabic}
+                onLanguageToggle={
+                    toggleLanguage
+                }
                 onMenuOpen={() =>
                     setMobileOpen(true)
                 }
@@ -101,6 +141,11 @@ const PublicLayout = () => {
             <MobileNavigation
                 open={mobileOpen}
                 menus={menus}
+                language={language}
+                isArabic={isArabic}
+                onLanguageToggle={
+                    toggleLanguage
+                }
                 onClose={() =>
                     setMobileOpen(false)
                 }
@@ -110,16 +155,25 @@ const PublicLayout = () => {
                 component="main"
                 sx={{
                     flex: 1,
+
                     pt: {
                         xs: 8,
                         md: 9,
                     },
+
+                    textAlign: isArabic
+                        ? "right"
+                        : "left",
                 }}
             >
 
                 <Outlet
                     context={{
                         menus,
+                        language,
+                        isArabic,
+                        direction,
+                        toggleLanguage,
                     }}
                 />
 
@@ -127,9 +181,25 @@ const PublicLayout = () => {
 
             <PublicFooter
                 menus={menus}
+                language={language}
+                isArabic={isArabic}
             />
 
         </Box>
+
+    );
+
+};
+
+const PublicLayout = () => {
+
+    return (
+
+        <LanguageProvider>
+
+            <PublicLayoutContent />
+
+        </LanguageProvider>
 
     );
 

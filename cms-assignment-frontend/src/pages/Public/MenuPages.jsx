@@ -22,6 +22,7 @@ import {
 } from "@mui/material";
 
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import DescriptionOutlinedIcon from "@mui/icons-material/DescriptionOutlined";
 import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
 import MenuBookOutlinedIcon from "@mui/icons-material/MenuBookOutlined";
@@ -41,11 +42,19 @@ import {
     getPublicPages,
 } from "../../services/publicService";
 
+import {
+    getLocalizedTitle,
+} from "../../utils/localization";
+
 const MenuPages = () => {
 
     const { slug } = useParams();
 
-    const { menus = [] } = useOutletContext();
+    const {
+        menus = [],
+        language = "en",
+        isArabic = false,
+    } = useOutletContext();
 
     const [pages, setPages] = useState([]);
 
@@ -59,15 +68,109 @@ const MenuPages = () => {
 
     const [totalRows, setTotalRows] = useState(0);
 
+    const content = isArabic
+        ? {
+            home: "الرئيسية",
+            submenu: "قائمة فرعية",
+            contentMenu: "قائمة محتوى",
+
+            description:
+                "تصفح جميع الصفحات المنشورة المتاحة ضمن هذه القائمة. يتم تحميل المحتوى مباشرة من نظام إدارة المحتوى، ولا يظهر إلا بعد نشره وحلول موعد عرضه.",
+
+            publishedPage: "صفحة منشورة",
+            publishedPages: "صفحات منشورة",
+
+            exploreSubmenus: "استكشف القوائم الفرعية",
+
+            sectionTitle: "المحتوى المنشور",
+
+            sectionDescriptionPrefix:
+                "تصفح أو ابحث في صفحات",
+
+            searchPlaceholder:
+                "ابحث في الصفحات...",
+
+            loadError:
+                "تعذر تحميل صفحات القائمة.",
+
+            noMatchingTitle:
+                "لم يتم العثور على صفحات مطابقة",
+
+            noPublishedPrefix:
+                "لا توجد صفحات منشورة في",
+
+            tryAnotherSearch:
+                "جرّب استخدام عبارة بحث أخرى.",
+
+            automaticMessage:
+                "ستظهر الصفحات المنشورة والمستحقة هنا تلقائياً.",
+
+            menuNotFound:
+                "القائمة غير موجودة",
+
+            menuNotFoundDescription:
+                "القائمة المطلوبة غير موجودة أو لم تعد متاحة للعامة.",
+
+            backHome:
+                "العودة إلى الرئيسية",
+        }
+        : {
+            home: "Home",
+            submenu: "Submenu",
+            contentMenu: "Content Menu",
+
+            description:
+                "Browse all published pages available under this menu. Content is loaded directly from the CMS and only visible once it has been published and is due.",
+
+            publishedPage: "Published Page",
+            publishedPages: "Published Pages",
+
+            exploreSubmenus: "Explore submenus",
+
+            sectionTitle: "Published Content",
+
+            sectionDescriptionPrefix:
+                "Browse or search pages in",
+
+            searchPlaceholder:
+                "Search pages...",
+
+            loadError:
+                "Unable to load menu pages.",
+
+            noMatchingTitle:
+                "No matching pages found",
+
+            noPublishedPrefix:
+                "No published pages in",
+
+            tryAnotherSearch:
+                "Try another search term.",
+
+            automaticMessage:
+                "Published and due pages will appear here automatically.",
+
+            menuNotFound:
+                "Menu not found",
+
+            menuNotFoundDescription:
+                "The requested menu does not exist or is no longer publicly available.",
+
+            backHome:
+                "Back to Home",
+        };
+
     const menuMatch = useMemo(() => {
 
         for (const rootMenu of menus) {
 
             if (rootMenu.slug === slug) {
+
                 return {
                     menu: rootMenu,
                     parent: null,
                 };
+
             }
 
             const childMenu =
@@ -77,10 +180,12 @@ const MenuPages = () => {
                 );
 
             if (childMenu) {
+
                 return {
                     menu: childMenu,
                     parent: rootMenu,
                 };
+
             }
 
         }
@@ -98,25 +203,45 @@ const MenuPages = () => {
     const parentMenu =
         menuMatch?.parent ?? null;
 
+    const selectedMenuTitle =
+        getLocalizedTitle(
+            selectedMenu,
+            language
+        );
+
+    const parentMenuTitle =
+        getLocalizedTitle(
+            parentMenu,
+            language
+        );
+
+    const childMenus =
+        selectedMenu?.children ?? [];
+
     const loadPages = async () => {
 
         if (!selectedMenu?.id) {
+
             setPages([]);
             setTotalRows(0);
             setTotalPages(1);
             setLoading(false);
+
             return;
+
         }
 
         try {
 
             setLoading(true);
 
-            const response = await getPublicPages({
-                page,
-                search,
-                menu_id: selectedMenu.id,
-            });
+            const response =
+                await getPublicPages({
+                    page,
+                    search,
+                    menu_id:
+                        selectedMenu.id,
+                });
 
             setPages(
                 response.data ?? []
@@ -129,17 +254,20 @@ const MenuPages = () => {
             );
 
             setTotalPages(
-                response.meta?.last_page ?? 1
+                response.meta?.last_page ??
+                1
             );
 
         } catch (error) {
 
             toast.error(
                 error.response?.data?.message ??
-                "Unable to load menu pages."
+                content.loadError
             );
 
             setPages([]);
+            setTotalRows(0);
+            setTotalPages(1);
 
         } finally {
 
@@ -166,22 +294,28 @@ const MenuPages = () => {
         search,
     ]);
 
-    const childMenus =
-        selectedMenu?.children ?? [];
-
     if (!selectedMenu) {
 
         return (
-            <MenuNotFound />
+            <MenuNotFound
+                content={content}
+                isArabic={isArabic}
+            />
         );
 
     }
 
     return (
 
-        <Box>
+        <Box
+            dir={
+                isArabic
+                    ? "rtl"
+                    : "ltr"
+            }
+        >
 
-            {/* Header section */}
+            {/* Header */}
 
             <Box
                 component="section"
@@ -189,9 +323,14 @@ const MenuPages = () => {
                     position: "relative",
                     overflow: "hidden",
                     bgcolor: "#eef5ff",
+
                     backgroundImage: `
                         radial-gradient(
-                            circle at 85% 20%,
+                            circle at ${
+                                isArabic
+                                    ? "15% 20%"
+                                    : "85% 20%"
+                            },
                             rgba(66,165,245,0.18),
                             transparent 30%
                         ),
@@ -201,11 +340,14 @@ const MenuPages = () => {
                             #edf5ff 100%
                         )
                     `,
+
                     borderBottom: "1px solid",
-                    borderColor: alpha(
-                        "#14213d",
-                        0.07
-                    ),
+
+                    borderColor:
+                        alpha(
+                            "#14213d",
+                            0.07
+                        ),
                 }}
             >
 
@@ -217,6 +359,7 @@ const MenuPages = () => {
                             sm: 3,
                             md: 4,
                         },
+
                         py: {
                             xs: 5,
                             md: 7,
@@ -225,13 +368,34 @@ const MenuPages = () => {
                 >
 
                     <Breadcrumbs
-                        aria-label="breadcrumb"
+                        aria-label={
+                            isArabic
+                                ? "مسار التنقل"
+                                : "breadcrumb"
+                        }
+                        separator={
+                            isArabic
+                                ? "‹"
+                                : "›"
+                        }
                         sx={{
                             mb: 3,
+
+                            "& .MuiBreadcrumbs-ol": {
+                                flexDirection:
+                                    isArabic
+                                        ? "row-reverse"
+                                        : "row",
+                                justifyContent:
+                                    isArabic
+                                        ? "flex-end"
+                                        : "flex-start",
+                            },
 
                             "& .MuiBreadcrumbs-separator": {
                                 color:
                                     "text.disabled",
+                                mx: 0.75,
                             },
                         }}
                     >
@@ -240,14 +404,29 @@ const MenuPages = () => {
                             component={Link}
                             to="/"
                             sx={{
-                                display: "inline-flex",
-                                alignItems: "center",
+                                display:
+                                    "inline-flex",
+
+                                alignItems:
+                                    "center",
+
+                                flexDirection:
+                                    isArabic
+                                        ? "row-reverse"
+                                        : "row",
+
                                 gap: 0.5,
+
                                 color:
                                     "text.secondary",
-                                textDecoration: "none",
+
+                                textDecoration:
+                                    "none",
+
                                 fontSize: 13,
-                                fontWeight: 700,
+
+                                fontWeight:
+                                    700,
 
                                 "&:hover": {
                                     color:
@@ -255,13 +434,15 @@ const MenuPages = () => {
                                 },
                             }}
                         >
+
                             <HomeOutlinedIcon
                                 sx={{
                                     fontSize: 17,
                                 }}
                             />
 
-                            Home
+                            {content.home}
+
                         </Box>
 
                         {parentMenu && (
@@ -272,10 +453,14 @@ const MenuPages = () => {
                                 sx={{
                                     color:
                                         "text.secondary",
+
                                     textDecoration:
                                         "none",
+
                                     fontSize: 13,
-                                    fontWeight: 700,
+
+                                    fontWeight:
+                                        700,
 
                                     "&:hover": {
                                         color:
@@ -283,7 +468,7 @@ const MenuPages = () => {
                                     },
                                 }}
                             >
-                                {parentMenu.title}
+                                {parentMenuTitle}
                             </Box>
 
                         )}
@@ -292,11 +477,14 @@ const MenuPages = () => {
                             sx={{
                                 color:
                                     "text.primary",
+
                                 fontSize: 13,
-                                fontWeight: 800,
+
+                                fontWeight:
+                                    800,
                             }}
                         >
-                            {selectedMenu.title}
+                            {selectedMenuTitle}
                         </Typography>
 
                     </Breadcrumbs>
@@ -304,11 +492,17 @@ const MenuPages = () => {
                     <Stack
                         direction={{
                             xs: "column",
-                            md: "row",
+
+                            md: isArabic
+                                ? "row-reverse"
+                                : "row",
                         }}
                         justifyContent="space-between"
                         alignItems={{
-                            xs: "flex-start",
+                            xs: isArabic
+                                ? "flex-end"
+                                : "flex-start",
+
                             md: "flex-end",
                         }}
                         spacing={3}
@@ -317,6 +511,19 @@ const MenuPages = () => {
                         <Box
                             sx={{
                                 maxWidth: 760,
+
+                                ml: isArabic
+                                    ? "auto"
+                                    : 0,
+
+                                mr: isArabic
+                                    ? 0
+                                    : "auto",
+
+                                textAlign:
+                                    isArabic
+                                        ? "right"
+                                        : "left",
                             }}
                         >
 
@@ -331,30 +538,37 @@ const MenuPages = () => {
                                 }
                                 label={
                                     parentMenu
-                                        ? "Submenu"
-                                        : "Content Menu"
+                                        ? content.submenu
+                                        : content.contentMenu
                                 }
                                 sx={{
                                     mb: 2,
-                                    bgcolor: alpha(
-                                        "#1976d2",
-                                        0.09
-                                    ),
+
+                                    bgcolor:
+                                        alpha(
+                                            "#1976d2",
+                                            0.09
+                                        ),
+
                                     color:
                                         "primary.main",
-                                    fontWeight: 800,
-                                    border: "1px solid",
+
+                                    fontWeight:
+                                        800,
+
+                                    border:
+                                        "1px solid",
+
                                     borderColor:
                                         alpha(
                                             "#1976d2",
                                             0.14
                                         ),
 
-                                    "& .MuiChip-icon":
-                                        {
-                                            color:
-                                                "primary.main",
-                                        },
+                                    "& .MuiChip-icon": {
+                                        color:
+                                            "primary.main",
+                                    },
                                 }}
                             />
 
@@ -366,33 +580,56 @@ const MenuPages = () => {
                                         sm: 44,
                                         md: 54,
                                     },
-                                    lineHeight: 1.05,
-                                    letterSpacing: -1.5,
-                                    fontWeight: 900,
-                                    color: "#10233f",
+
+                                    lineHeight:
+                                        isArabic
+                                            ? 1.35
+                                            : 1.05,
+
+                                    letterSpacing:
+                                        isArabic
+                                            ? 0
+                                            : -1.5,
+
+                                    fontWeight:
+                                        900,
+
+                                    color:
+                                        "#10233f",
                                 }}
                             >
-                                {selectedMenu.title}
+                                {selectedMenuTitle}
                             </Typography>
 
                             <Typography
                                 sx={{
                                     mt: 2,
+
                                     maxWidth: 680,
+
+                                    ml: isArabic
+                                        ? "auto"
+                                        : 0,
+
+                                    mr: isArabic
+                                        ? 0
+                                        : "auto",
+
                                     fontSize: {
                                         xs: 15,
                                         md: 17,
                                     },
-                                    lineHeight: 1.75,
+
+                                    lineHeight:
+                                        isArabic
+                                            ? 2
+                                            : 1.75,
+
                                     color:
                                         "text.secondary",
                                 }}
                             >
-                                Browse all published pages
-                                available under this menu.
-                                Content is loaded directly from
-                                the CMS and only visible once it
-                                has been published and is due.
+                                {content.description}
                             </Typography>
 
                         </Box>
@@ -401,28 +638,47 @@ const MenuPages = () => {
                             sx={{
                                 px: 2.5,
                                 py: 1.5,
-                                borderRadius: 2.5,
+
+                                minWidth: 150,
+
+                                borderRadius:
+                                    2.5,
+
                                 bgcolor:
                                     alpha(
                                         "#fff",
                                         0.74
                                     ),
-                                border: "1px solid",
+
+                                border:
+                                    "1px solid",
+
                                 borderColor:
                                     alpha(
                                         "#14213d",
                                         0.08
                                     ),
+
                                 backdropFilter:
                                     "blur(10px)",
+
+                                textAlign:
+                                    isArabic
+                                        ? "right"
+                                        : "left",
                             }}
                         >
 
                             <Typography
                                 sx={{
                                     fontSize: 26,
-                                    fontWeight: 900,
-                                    color: "#10233f",
+
+                                    fontWeight:
+                                        900,
+
+                                    color:
+                                        "#10233f",
+
                                     lineHeight: 1,
                                 }}
                             >
@@ -432,20 +688,29 @@ const MenuPages = () => {
                             <Typography
                                 sx={{
                                     mt: 0.6,
+
                                     fontSize: 11,
-                                    fontWeight: 800,
+
+                                    fontWeight:
+                                        800,
+
                                     color:
                                         "text.secondary",
+
                                     textTransform:
-                                        "uppercase",
-                                    letterSpacing: 1,
+                                        isArabic
+                                            ? "none"
+                                            : "uppercase",
+
+                                    letterSpacing:
+                                        isArabic
+                                            ? 0
+                                            : 1,
                                 }}
                             >
-                                Published {
-                                    totalRows === 1
-                                        ? "Page"
-                                        : "Pages"
-                                }
+                                {totalRows === 1
+                                    ? content.publishedPage
+                                    : content.publishedPages}
                             </Typography>
 
                         </Box>
@@ -456,7 +721,7 @@ const MenuPages = () => {
 
             </Box>
 
-            {/* Content */}
+            {/* Main content */}
 
             <Box
                 component="section"
@@ -465,7 +730,9 @@ const MenuPages = () => {
                         xs: 6,
                         md: 9,
                     },
-                    bgcolor: "#f7f8fb",
+
+                    bgcolor:
+                        "#f7f8fb",
                 }}
             >
 
@@ -487,39 +754,69 @@ const MenuPages = () => {
                         <Box
                             sx={{
                                 mb: 5,
+
                                 p: {
                                     xs: 2.5,
                                     sm: 3,
                                 },
-                                borderRadius: 3,
-                                bgcolor: "#fff",
-                                border: "1px solid",
-                                borderColor: alpha(
-                                    "#14213d",
-                                    0.08
-                                ),
+
+                                borderRadius:
+                                    3,
+
+                                bgcolor:
+                                    "#fff",
+
+                                border:
+                                    "1px solid",
+
+                                borderColor:
+                                    alpha(
+                                        "#14213d",
+                                        0.08
+                                    ),
+
                                 boxShadow:
                                     "0 8px 24px rgba(15,23,42,0.04)",
+
+                                textAlign:
+                                    isArabic
+                                        ? "right"
+                                        : "left",
                             }}
                         >
 
                             <Typography
                                 sx={{
                                     mb: 2,
+
                                     fontSize: 12,
-                                    fontWeight: 900,
+
+                                    fontWeight:
+                                        900,
+
                                     color:
                                         "primary.main",
-                                    letterSpacing: 1.5,
+
+                                    letterSpacing:
+                                        isArabic
+                                            ? 0
+                                            : 1.5,
+
                                     textTransform:
-                                        "uppercase",
+                                        isArabic
+                                            ? "none"
+                                            : "uppercase",
                                 }}
                             >
-                                Explore submenus
+                                {content.exploreSubmenus}
                             </Typography>
 
                             <Stack
-                                direction="row"
+                                direction={
+                                    isArabic
+                                        ? "row-reverse"
+                                        : "row"
+                                }
                                 flexWrap="wrap"
                                 spacing={1}
                                 useFlexGap
@@ -529,23 +826,47 @@ const MenuPages = () => {
                                     (child) => (
 
                                         <Button
-                                            key={child.id}
-                                            component={Link}
+                                            key={
+                                                child.id
+                                            }
+                                            component={
+                                                Link
+                                            }
                                             to={`/menu/${child.slug}`}
                                             variant="outlined"
                                             startIcon={
                                                 <MenuBookOutlinedIcon />
                                             }
                                             sx={{
-                                                borderRadius: 20,
+                                                borderRadius:
+                                                    20,
+
                                                 px: 2,
+
                                                 py: 0.8,
+
                                                 textTransform:
                                                     "none",
-                                                fontWeight: 800,
+
+                                                fontWeight:
+                                                    800,
+
+                                                "& .MuiButton-startIcon":
+                                                    {
+                                                        ml: isArabic
+                                                            ? 1
+                                                            : -0.5,
+
+                                                        mr: isArabic
+                                                            ? -0.5
+                                                            : 1,
+                                                    },
                                             }}
                                         >
-                                            {child.title}
+                                            {getLocalizedTitle(
+                                                child,
+                                                language
+                                            )}
                                         </Button>
 
                                     )
@@ -557,12 +878,15 @@ const MenuPages = () => {
 
                     )}
 
-                    {/* Search */}
+                    {/* Search and heading */}
 
                     <Stack
                         direction={{
                             xs: "column",
-                            sm: "row",
+
+                            sm: isArabic
+                                ? "row-reverse"
+                                : "row",
                         }}
                         justifyContent="space-between"
                         alignItems={{
@@ -570,10 +894,19 @@ const MenuPages = () => {
                             sm: "center",
                         }}
                         spacing={2}
-                        sx={{ mb: 4 }}
+                        sx={{
+                            mb: 4,
+                        }}
                     >
 
-                        <Box>
+                        <Box
+                            sx={{
+                                textAlign:
+                                    isArabic
+                                        ? "right"
+                                        : "left",
+                            }}
+                        >
 
                             <Typography
                                 component="h2"
@@ -582,31 +915,65 @@ const MenuPages = () => {
                                         xs: 26,
                                         md: 32,
                                     },
-                                    fontWeight: 900,
-                                    color: "#10233f",
-                                    letterSpacing: -0.7,
+
+                                    fontWeight:
+                                        900,
+
+                                    color:
+                                        "#10233f",
+
+                                    letterSpacing:
+                                        isArabic
+                                            ? 0
+                                            : -0.7,
+
+                                    lineHeight:
+                                        isArabic
+                                            ? 1.5
+                                            : 1.2,
                                 }}
                             >
-                                Published Content
+                                {content.sectionTitle}
                             </Typography>
 
                             <Typography
                                 sx={{
                                     mt: 0.6,
+
                                     color:
                                         "text.secondary",
-                                    fontSize: 14,
+
+                                    fontSize:
+                                        14,
+
+                                    lineHeight:
+                                        isArabic
+                                            ? 1.9
+                                            : 1.5,
                                 }}
                             >
-                                Browse or search pages in {
-                                    selectedMenu.title
-                                }.
+                                {content.sectionDescriptionPrefix}{" "}
+                                <Box
+                                    component="span"
+                                    sx={{
+                                        fontWeight:
+                                            700,
+
+                                        color:
+                                            "text.primary",
+                                    }}
+                                >
+                                    {selectedMenuTitle}
+                                </Box>
+                                .
                             </Typography>
 
                         </Box>
 
                         <TextField
-                            placeholder="Search pages..."
+                            placeholder={
+                                content.searchPlaceholder
+                            }
                             size="small"
                             value={search}
                             onChange={(event) => {
@@ -618,20 +985,28 @@ const MenuPages = () => {
                                 setPage(1);
 
                             }}
+                            inputProps={{
+                                dir: isArabic
+                                    ? "rtl"
+                                    : "ltr",
+                            }}
                             InputProps={{
                                 startAdornment: (
+
                                     <InputAdornment position="start">
 
                                         <SearchIcon
                                             sx={{
                                                 color:
                                                     "text.disabled",
+
                                                 fontSize:
                                                     20,
                                             }}
                                         />
 
                                     </InputAdornment>
+
                                 ),
                             }}
                             sx={{
@@ -640,38 +1015,47 @@ const MenuPages = () => {
                                     sm: 330,
                                 },
 
-                                "& .MuiOutlinedInput-root":
-                                    {
-                                        borderRadius: 2.5,
-                                        bgcolor: "#fff",
+                                "& .MuiOutlinedInput-root": {
+                                    borderRadius:
+                                        2.5,
 
-                                        "& fieldset": {
-                                            borderColor:
-                                                alpha(
-                                                    "#14213d",
-                                                    0.1
-                                                ),
-                                        },
+                                    bgcolor:
+                                        "#fff",
 
-                                        "&:hover fieldset":
-                                            {
-                                                borderColor:
-                                                    alpha(
-                                                        "#1976d2",
-                                                        0.35
-                                                    ),
-                                            },
-
-                                        "&.Mui-focused fieldset":
-                                            {
-                                                borderColor:
-                                                    "primary.main",
-                                            },
+                                    "& fieldset": {
+                                        borderColor:
+                                            alpha(
+                                                "#14213d",
+                                                0.1
+                                            ),
                                     },
+
+                                    "&:hover fieldset": {
+                                        borderColor:
+                                            alpha(
+                                                "#1976d2",
+                                                0.35
+                                            ),
+                                    },
+
+                                    "&.Mui-focused fieldset": {
+                                        borderColor:
+                                            "primary.main",
+                                    },
+                                },
+
+                                "& .MuiInputBase-input": {
+                                    textAlign:
+                                        isArabic
+                                            ? "right"
+                                            : "left",
+                                },
                             }}
                         />
 
                     </Stack>
+
+                    {/* Results */}
 
                     {loading ? (
 
@@ -681,10 +1065,18 @@ const MenuPages = () => {
 
                         <EmptyMenuPages
                             menuTitle={
-                                selectedMenu.title
+                                selectedMenuTitle
                             }
                             hasSearch={
-                                Boolean(search)
+                                Boolean(
+                                    search.trim()
+                                )
+                            }
+                            content={
+                                content
+                            }
+                            isArabic={
+                                isArabic
                             }
                         />
 
@@ -698,13 +1090,16 @@ const MenuPages = () => {
                             >
 
                                 {pages.map(
-                                    (pageItem) => (
+                                    (
+                                        pageItem
+                                    ) => (
 
                                         <Grid
-                                            item
-                                            xs={12}
-                                            sm={6}
-                                            lg={4}
+                                            size={{
+                                                xs: 12,
+                                                sm: 6,
+                                                lg: 4,
+                                            }}
                                             key={
                                                 pageItem.id
                                             }
@@ -713,6 +1108,12 @@ const MenuPages = () => {
                                             <PageCard
                                                 page={
                                                     pageItem
+                                                }
+                                                language={
+                                                    language
+                                                }
+                                                isArabic={
+                                                    isArabic
                                                 }
                                             />
 
@@ -727,25 +1128,40 @@ const MenuPages = () => {
 
                                 <Stack
                                     alignItems="center"
-                                    sx={{ mt: 6 }}
+                                    sx={{
+                                        mt: 6,
+                                    }}
                                 >
 
                                     <Pagination
                                         count={
                                             totalPages
                                         }
-                                        page={page}
+                                        page={
+                                            page
+                                        }
                                         onChange={(
                                             event,
                                             value
-                                        ) =>
+                                        ) => {
+
                                             setPage(
                                                 value
-                                            )
-                                        }
+                                            );
+
+                                            window.scrollTo({
+                                                top: 0,
+                                                behavior:
+                                                    "smooth",
+                                            });
+
+                                        }}
                                         color="primary"
                                         shape="rounded"
                                         size="large"
+                                        siblingCount={1}
+                                        boundaryCount={1}
+                                        dir="ltr"
                                     />
 
                                 </Stack>
@@ -766,176 +1182,274 @@ const MenuPages = () => {
 
 };
 
-const MenuPageSkeleton = () => {
+const MenuPageSkeleton = () => (
 
-    return (
+    <Grid
+        container
+        spacing={3}
+    >
 
-        <Grid
-            container
-            spacing={3}
-        >
+        {[1, 2, 3, 4, 5, 6].map(
+            (item) => (
 
-            {[1, 2, 3, 4, 5, 6].map(
-                (item) => (
+                <Grid
+                    size={{
+                        xs: 12,
+                        sm: 6,
+                        lg: 4,
+                    }}
+                    key={item}
+                >
 
-                    <Grid
-                        item
-                        xs={12}
-                        sm={6}
-                        lg={4}
-                        key={item}
-                    >
+                    <Skeleton
+                        variant="rounded"
+                        height={390}
+                        sx={{
+                            borderRadius:
+                                4,
+                        }}
+                    />
 
-                        <Skeleton
-                            variant="rounded"
-                            height={390}
-                            sx={{
-                                borderRadius: 4,
-                            }}
-                        />
+                </Grid>
 
-                    </Grid>
+            )
+        )}
 
-                )
-            )}
+    </Grid>
 
-        </Grid>
-
-    );
-
-};
+);
 
 const EmptyMenuPages = ({
     menuTitle,
     hasSearch,
-}) => {
+    content,
+    isArabic = false,
+}) => (
 
-    return (
+    <Box
+        dir={
+            isArabic
+                ? "rtl"
+                : "ltr"
+        }
+        sx={{
+            py: 9,
 
-        <Box
+            px: 3,
+
+            textAlign:
+                "center",
+
+            borderRadius:
+                4,
+
+            bgcolor:
+                "#fff",
+
+            border:
+                "1px dashed",
+
+            borderColor:
+                alpha(
+                    "#14213d",
+                    0.14
+                ),
+        }}
+    >
+
+        <DescriptionOutlinedIcon
             sx={{
-                py: 9,
-                px: 3,
-                textAlign: "center",
-                borderRadius: 4,
-                bgcolor: "#fff",
-                border: "1px dashed",
-                borderColor:
-                    alpha(
-                        "#14213d",
-                        0.14
-                    ),
+                fontSize: 62,
+
+                color:
+                    "text.disabled",
+            }}
+        />
+
+        <Typography
+            sx={{
+                mt: 2,
+
+                fontSize:
+                    21,
+
+                fontWeight:
+                    900,
+
+                color:
+                    "#10233f",
+
+                lineHeight:
+                    isArabic
+                        ? 1.6
+                        : 1.3,
             }}
         >
+            {hasSearch
+                ? content.noMatchingTitle
+                : `${content.noPublishedPrefix} ${menuTitle}`}
+        </Typography>
 
-            <DescriptionOutlinedIcon
-                sx={{
-                    fontSize: 62,
-                    color: "text.disabled",
-                }}
-            />
+        <Typography
+            sx={{
+                mt: 1,
 
-            <Typography
-                sx={{
-                    mt: 2,
-                    fontSize: 21,
-                    fontWeight: 900,
-                    color: "#10233f",
-                }}
-            >
-                {hasSearch
-                    ? "No matching pages found"
-                    : `No published pages in ${menuTitle}`}
-            </Typography>
+                maxWidth:
+                    500,
 
-            <Typography
-                sx={{
-                    mt: 1,
-                    maxWidth: 500,
-                    mx: "auto",
-                    color: "text.secondary",
-                    lineHeight: 1.7,
-                }}
-            >
-                {hasSearch
-                    ? "Try another search term."
-                    : "Published and due pages will appear here automatically."}
-            </Typography>
+                mx: "auto",
 
-        </Box>
+                color:
+                    "text.secondary",
 
-    );
+                lineHeight:
+                    isArabic
+                        ? 1.9
+                        : 1.7,
+            }}
+        >
+            {hasSearch
+                ? content.tryAnotherSearch
+                : content.automaticMessage}
+        </Typography>
 
-};
+    </Box>
 
-const MenuNotFound = () => {
+);
+
+const MenuNotFound = ({
+    content,
+    isArabic = false,
+}) => {
+
+    const DirectionArrow =
+        isArabic
+            ? ArrowForwardIcon
+            : ArrowBackIcon;
 
     return (
 
         <Box
+            dir={
+                isArabic
+                    ? "rtl"
+                    : "ltr"
+            }
             sx={{
-                minHeight: "70vh",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
+                minHeight:
+                    "70vh",
+
+                display:
+                    "flex",
+
+                alignItems:
+                    "center",
+
+                justifyContent:
+                    "center",
+
                 px: 3,
-                bgcolor: "#f7f8fb",
+
+                bgcolor:
+                    "#f7f8fb",
             }}
         >
 
             <Box
                 sx={{
-                    maxWidth: 560,
-                    textAlign: "center",
+                    maxWidth:
+                        560,
+
+                    textAlign:
+                        "center",
                 }}
             >
 
                 <MenuBookOutlinedIcon
                     sx={{
-                        fontSize: 72,
-                        color: "text.disabled",
+                        fontSize:
+                            72,
+
+                        color:
+                            "text.disabled",
                     }}
                 />
 
                 <Typography
                     sx={{
                         mt: 2,
+
                         fontSize: {
                             xs: 30,
                             md: 38,
                         },
-                        fontWeight: 900,
-                        color: "#10233f",
+
+                        fontWeight:
+                            900,
+
+                        color:
+                            "#10233f",
+
+                        lineHeight:
+                            isArabic
+                                ? 1.5
+                                : 1.2,
                     }}
                 >
-                    Menu not found
+                    {content.menuNotFound}
                 </Typography>
 
                 <Typography
                     sx={{
                         mt: 1.5,
-                        color: "text.secondary",
-                        lineHeight: 1.7,
+
+                        color:
+                            "text.secondary",
+
+                        lineHeight:
+                            isArabic
+                                ? 1.9
+                                : 1.7,
                     }}
                 >
-                    The requested menu does not exist or is no longer publicly available.
+                    {content.menuNotFoundDescription}
                 </Typography>
 
                 <Button
                     component={Link}
                     to="/"
                     variant="contained"
-                    startIcon={<ArrowBackIcon />}
+                    startIcon={
+                        <DirectionArrow />
+                    }
                     sx={{
                         mt: 3,
-                        borderRadius: 2.5,
+
+                        borderRadius:
+                            2.5,
+
                         px: 3,
+
                         py: 1.2,
-                        textTransform: "none",
-                        fontWeight: 800,
+
+                        textTransform:
+                            "none",
+
+                        fontWeight:
+                            800,
+
+                        "& .MuiButton-startIcon": {
+                            ml: isArabic
+                                ? 1
+                                : -0.5,
+
+                            mr: isArabic
+                                ? -0.5
+                                : 1,
+                        },
                     }}
                 >
-                    Back to Home
+                    {content.backHome}
                 </Button>
 
             </Box>

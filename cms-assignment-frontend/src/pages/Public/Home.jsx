@@ -17,6 +17,7 @@ import {
 } from "@mui/material";
 
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import DescriptionOutlinedIcon from "@mui/icons-material/DescriptionOutlined";
 import MenuBookOutlinedIcon from "@mui/icons-material/MenuBookOutlined";
 
@@ -34,15 +35,131 @@ import {
     getPublicPages,
 } from "../../services/publicService";
 
+import {
+    getLocalizedTitle,
+} from "../../utils/localization";
+
 const Home = () => {
 
-    const { menus = [] } = useOutletContext();
+    const {
+        menus = [],
+        language = "en",
+        isArabic = false,
+    } = useOutletContext();
 
     const [pages, setPages] = useState([]);
 
-    const [totalPages, setTotalPages] = useState(0);
+    const [totalPages, setTotalPages] =
+        useState(0);
 
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] =
+        useState(true);
+
+    const content = isArabic
+        ? {
+            loadError:
+                "تعذر تحميل الصفحات المنشورة.",
+
+            latestEyebrow:
+                "أحدث المحتويات",
+
+            latestTitle:
+                "الصفحات المنشورة المميزة",
+
+            latestDescription:
+                "استكشف أحدث الصفحات المنشورة والمحتوى المنظم من خلال القوائم الديناميكية.",
+
+            categoryEyebrow:
+                "تصفح حسب التصنيف",
+
+            categoryTitle:
+                "استكشف قوائم المحتوى",
+
+            categoryDescription:
+                "يتم إنشاء كل قسم تلقائياً من بنية القوائم التي تتم إدارتها في نظام إدارة المحتوى.",
+
+            ctaEyebrow:
+                "النشر الديناميكي",
+
+            ctaTitle:
+                "اكتشف محتوى منظماً ومحدثاً وسهل الوصول.",
+
+            ctaDescription:
+                "تصفح الصفحات من خلال قوائمنا الديناميكية واعرض المحتوى المنشور مباشرة من نظام إدارة المحتوى.",
+
+            ctaButton:
+                "ابدأ الاستكشاف",
+
+            publishedPage:
+                "صفحة منشورة",
+
+            publishedPages:
+                "صفحات منشورة",
+
+            viewAll:
+                "عرض الكل",
+
+            noMenuPages:
+                "لا توجد صفحات منشورة متاحة حالياً في هذه القائمة.",
+
+            emptyTitle:
+                "لا توجد صفحات منشورة",
+
+            emptyDescription:
+                "ستظهر الصفحات المنشورة والمستحقة هنا تلقائياً.",
+        }
+        : {
+            loadError:
+                "Unable to load published pages.",
+
+            latestEyebrow:
+                "Latest content",
+
+            latestTitle:
+                "Featured published pages",
+
+            latestDescription:
+                "Explore the most recently published pages and discover content organized through the dynamic menu.",
+
+            categoryEyebrow:
+                "Browse by category",
+
+            categoryTitle:
+                "Explore our content menus",
+
+            categoryDescription:
+                "Each section is generated from the menu structure managed in the CMS.",
+
+            ctaEyebrow:
+                "Dynamic publishing",
+
+            ctaTitle:
+                "Discover content that is organized, current and easy to access.",
+
+            ctaDescription:
+                "Browse pages through our dynamic menus and view content published directly from the CMS.",
+
+            ctaButton:
+                "Start Exploring",
+
+            publishedPage:
+                "published page",
+
+            publishedPages:
+                "published pages",
+
+            viewAll:
+                "View All",
+
+            noMenuPages:
+                "No published pages are currently available in this menu.",
+
+            emptyTitle:
+                "No published pages available",
+
+            emptyDescription:
+                "Published and due pages will appear here automatically.",
+        };
 
     const loadPages = async () => {
 
@@ -50,11 +167,14 @@ const Home = () => {
 
             setLoading(true);
 
-            const response = await getPublicPages({
-                page: 1,
-            });
+            const response =
+                await getPublicPages({
+                    page: 1,
+                });
 
-            setPages(response.data ?? []);
+            setPages(
+                response.data ?? []
+            );
 
             setTotalPages(
                 response.meta?.total ??
@@ -66,8 +186,12 @@ const Home = () => {
 
             toast.error(
                 error.response?.data?.message ??
-                "Unable to load published pages."
+                content.loadError
             );
+
+            setPages([]);
+
+            setTotalPages(0);
 
         } finally {
 
@@ -81,11 +205,13 @@ const Home = () => {
 
         loadPages();
 
-    }, []);
+    }, [language]);
 
-    const featuredPage = pages[0] ?? null;
+    const featuredPage =
+        pages[0] ?? null;
 
-    const supportingPages = pages.slice(1, 7);
+    const supportingPages =
+        pages.slice(1, 7);
 
     const visibleMenus = useMemo(() => {
 
@@ -98,32 +224,66 @@ const Home = () => {
                 menu.children?.reduce(
                     (total, child) =>
                         total +
-                        (child.pages?.length ?? 0),
+                        (
+                            child.pages
+                                ?.length ?? 0
+                        ),
                     0
                 ) ?? 0;
 
-            return rootPages + childPages > 0;
+            return (
+                rootPages +
+                childPages >
+                0
+            );
 
         });
 
     }, [menus]);
 
-    const menuCount = visibleMenus.reduce(
-        (total, menu) =>
-            total +
-            1 +
-            (menu.children?.length ?? 0),
-        0
-    );
+    const menuCount =
+        visibleMenus.reduce(
+            (total, menu) =>
+                total +
+                1 +
+                (
+                    menu.children
+                        ?.length ?? 0
+                ),
+            0
+        );
+
+    const DirectionArrow =
+        isArabic
+            ? ArrowBackIcon
+            : ArrowForwardIcon;
 
     return (
 
-        <Box>
+        <Box
+            dir={
+                isArabic
+                    ? "rtl"
+                    : "ltr"
+            }
+        >
 
             <HeroSection
-                featuredPage={featuredPage}
-                totalPages={totalPages}
-                totalMenus={menuCount}
+                featuredPage={
+                    featuredPage
+                }
+                totalPages={
+                    totalPages
+                }
+                totalMenus={
+                    menuCount
+                }
+                language={
+                    language
+                }
+                isArabic={
+                    isArabic
+                }
             />
 
             {/* Featured Content */}
@@ -132,7 +292,9 @@ const Home = () => {
                 component="section"
                 id="featured-pages"
                 sx={{
-                    bgcolor: "#f7f8fb",
+                    bgcolor:
+                        "#f7f8fb",
+
                     py: {
                         xs: 7,
                         md: 10,
@@ -152,9 +314,18 @@ const Home = () => {
                 >
 
                     <SectionHeading
-                        eyebrow="Latest content"
-                        title="Featured published pages"
-                        description="Explore the most recently published pages and discover content organized through the dynamic menu."
+                        eyebrow={
+                            content.latestEyebrow
+                        }
+                        title={
+                            content.latestTitle
+                        }
+                        description={
+                            content.latestDescription
+                        }
+                        isArabic={
+                            isArabic
+                        }
                     />
 
                     {loading ? (
@@ -163,7 +334,17 @@ const Home = () => {
 
                     ) : pages.length === 0 ? (
 
-                        <EmptyContent />
+                        <EmptyContent
+                            title={
+                                content.emptyTitle
+                            }
+                            description={
+                                content.emptyDescription
+                            }
+                            isArabic={
+                                isArabic
+                            }
+                        />
 
                     ) : (
 
@@ -171,38 +352,66 @@ const Home = () => {
 
                             {featuredPage && (
 
-                                <Box sx={{ mt: 5 }}>
+                                <Box
+                                    sx={{
+                                        mt: 5,
+                                    }}
+                                >
 
                                     <PageCard
-                                        page={featuredPage}
+                                        page={
+                                            featuredPage
+                                        }
                                         featured
+                                        language={
+                                            language
+                                        }
+                                        isArabic={
+                                            isArabic
+                                        }
                                     />
 
                                 </Box>
 
                             )}
 
-                            {supportingPages.length > 0 && (
+                            {supportingPages.length >
+                                0 && (
 
                                 <Grid
                                     container
                                     spacing={3}
-                                    sx={{ mt: 1 }}
+                                    sx={{
+                                        mt: 1,
+                                    }}
                                 >
 
                                     {supportingPages.map(
-                                        (page) => (
+                                        (
+                                            page
+                                        ) => (
 
                                             <Grid
-                                                item
-                                                xs={12}
-                                                sm={6}
-                                                lg={4}
-                                                key={page.id}
+                                                size={{
+                                                    xs: 12,
+                                                    sm: 6,
+                                                    lg: 4,
+                                                }}
+                                                key={
+                                                    page.id
+                                                }
                                             >
 
                                                 <PageCard
-                                                    page={page}
+                                                    page={
+                                                        page
+                                                    }
+                                                    language={
+                                                        language
+                                                    }
+                                                    isArabic={
+                                                        isArabic
+                                                    }
                                                 />
 
                                             </Grid>
@@ -233,7 +442,9 @@ const Home = () => {
                             xs: 7,
                             md: 10,
                         },
-                        bgcolor: "#fff",
+
+                        bgcolor:
+                            "#fff",
                     }}
                 >
 
@@ -249,9 +460,18 @@ const Home = () => {
                     >
 
                         <SectionHeading
-                            eyebrow="Browse by category"
-                            title="Explore our content menus"
-                            description="Each section is generated from the menu structure managed in the CMS."
+                            eyebrow={
+                                content.categoryEyebrow
+                            }
+                            title={
+                                content.categoryTitle
+                            }
+                            description={
+                                content.categoryDescription
+                            }
+                            isArabic={
+                                isArabic
+                            }
                         />
 
                         <Stack
@@ -259,17 +479,36 @@ const Home = () => {
                                 xs: 6,
                                 md: 8,
                             }}
-                            sx={{ mt: 6 }}
+                            sx={{
+                                mt: 6,
+                            }}
                         >
 
-                            {visibleMenus.map((menu) => (
+                            {visibleMenus.map(
+                                (
+                                    menu
+                                ) => (
 
-                                <MenuContentSection
-                                    key={menu.id}
-                                    menu={menu}
-                                />
+                                    <MenuContentSection
+                                        key={
+                                            menu.id
+                                        }
+                                        menu={
+                                            menu
+                                        }
+                                        language={
+                                            language
+                                        }
+                                        isArabic={
+                                            isArabic
+                                        }
+                                        content={
+                                            content
+                                        }
+                                    />
 
-                            ))}
+                                )
+                            )}
 
                         </Stack>
 
@@ -279,16 +518,18 @@ const Home = () => {
 
             )}
 
-            {/* Call to action */}
+            {/* Call to Action */}
 
             <Box
                 component="section"
                 sx={{
                     px: 2,
+
                     pb: {
                         xs: 7,
                         md: 10,
                     },
+
                     bgcolor: "#fff",
                 }}
             >
@@ -305,24 +546,33 @@ const Home = () => {
 
                     <Box
                         sx={{
-                            position: "relative",
-                            overflow: "hidden",
+                            position:
+                                "relative",
+
+                            overflow:
+                                "hidden",
+
                             borderRadius: {
                                 xs: 4,
                                 md: 5,
                             },
+
                             px: {
                                 xs: 3,
                                 sm: 5,
                                 md: 8,
                             },
+
                             py: {
                                 xs: 6,
                                 md: 8,
                             },
+
                             color: "#fff",
+
                             background:
                                 "linear-gradient(135deg, #0f2f57 0%, #1565c0 55%, #42a5f5 100%)",
+
                             boxShadow:
                                 "0 24px 60px rgba(21,101,192,0.2)",
                         }}
@@ -330,94 +580,197 @@ const Home = () => {
 
                         <Box
                             sx={{
-                                position: "absolute",
+                                position:
+                                    "absolute",
+
                                 width: 320,
                                 height: 320,
-                                borderRadius: "50%",
-                                bgcolor: alpha("#fff", 0.07),
+
+                                borderRadius:
+                                    "50%",
+
+                                bgcolor:
+                                    alpha(
+                                        "#fff",
+                                        0.07
+                                    ),
+
                                 top: -170,
-                                right: -80,
+
+                                right: isArabic
+                                    ? "auto"
+                                    : -80,
+
+                                left: isArabic
+                                    ? -80
+                                    : "auto",
                             }}
                         />
 
                         <Box
                             sx={{
-                                position: "relative",
+                                position:
+                                    "relative",
+
                                 maxWidth: 720,
+
+                                ml: isArabic
+                                    ? "auto"
+                                    : 0,
+
+                                mr: isArabic
+                                    ? 0
+                                    : "auto",
+
+                                textAlign:
+                                    isArabic
+                                        ? "right"
+                                        : "left",
                             }}
                         >
 
                             <Typography
                                 sx={{
-                                    fontSize: 12,
-                                    fontWeight: 900,
-                                    letterSpacing: 2,
-                                    textTransform: "uppercase",
-                                    color: "#bbdefb",
+                                    fontSize:
+                                        12,
+
+                                    fontWeight:
+                                        900,
+
+                                    letterSpacing:
+                                        isArabic
+                                            ? 0
+                                            : 2,
+
+                                    textTransform:
+                                        isArabic
+                                            ? "none"
+                                            : "uppercase",
+
+                                    color:
+                                        "#bbdefb",
                                 }}
                             >
-                                Dynamic publishing
+                                {
+                                    content.ctaEyebrow
+                                }
                             </Typography>
 
                             <Typography
                                 sx={{
                                     mt: 1.5,
+
                                     fontSize: {
                                         xs: 30,
                                         sm: 38,
                                         md: 46,
                                     },
-                                    lineHeight: 1.1,
-                                    fontWeight: 900,
-                                    letterSpacing: -1,
+
+                                    lineHeight:
+                                        isArabic
+                                            ? 1.45
+                                            : 1.1,
+
+                                    fontWeight:
+                                        900,
+
+                                    letterSpacing:
+                                        isArabic
+                                            ? 0
+                                            : -1,
                                 }}
                             >
-                                Discover content that is organized,
-                                current and easy to access.
+                                {
+                                    content.ctaTitle
+                                }
                             </Typography>
 
                             <Typography
                                 sx={{
                                     mt: 2.5,
-                                    maxWidth: 620,
+
+                                    maxWidth:
+                                        620,
+
                                     fontSize: {
                                         xs: 15,
                                         md: 17,
                                     },
-                                    lineHeight: 1.75,
-                                    color: alpha("#fff", 0.78),
+
+                                    lineHeight:
+                                        isArabic
+                                            ? 2
+                                            : 1.75,
+
+                                    color:
+                                        alpha(
+                                            "#fff",
+                                            0.78
+                                        ),
                                 }}
                             >
-                                Browse pages through our dynamic menus
-                                and view content published directly from
-                                the CMS.
+                                {
+                                    content.ctaDescription
+                                }
                             </Typography>
 
                             {featuredPage && (
 
                                 <Button
-                                    component={Link}
+                                    component={
+                                        Link
+                                    }
                                     to={`/page/${featuredPage.slug}`}
                                     variant="contained"
-                                    endIcon={<ArrowForwardIcon />}
+                                    endIcon={
+                                        <DirectionArrow />
+                                    }
                                     sx={{
                                         mt: 4,
                                         px: 3.5,
                                         py: 1.4,
-                                        borderRadius: 2.5,
-                                        textTransform: "none",
-                                        fontWeight: 800,
-                                        bgcolor: "#fff",
-                                        color: "#1565c0",
-                                        boxShadow: "none",
+
+                                        borderRadius:
+                                            2.5,
+
+                                        textTransform:
+                                            "none",
+
+                                        fontWeight:
+                                            800,
+
+                                        bgcolor:
+                                            "#fff",
+
+                                        color:
+                                            "#1565c0",
+
+                                        boxShadow:
+                                            "none",
+
+                                        "& .MuiButton-endIcon":
+                                            {
+                                                ml: isArabic
+                                                    ? 0
+                                                    : 1,
+
+                                                mr: isArabic
+                                                    ? 1
+                                                    : 0,
+                                            },
 
                                         "&:hover": {
-                                            bgcolor: "#eaf3ff",
-                                            boxShadow: "none",
+                                            bgcolor:
+                                                "#eaf3ff",
+
+                                            boxShadow:
+                                                "none",
                                         },
                                     }}
                                 >
-                                    Start Exploring
+                                    {
+                                        content.ctaButton
+                                    }
                                 </Button>
 
                             )}
@@ -438,49 +791,100 @@ const Home = () => {
 
 const MenuContentSection = ({
     menu,
+    language = "en",
+    isArabic = false,
+    content,
 }) => {
+
+    const menuTitle =
+        getLocalizedTitle(
+            menu,
+            language
+        );
 
     const menuPages = [
         ...(menu.pages ?? []),
 
-        ...(menu.children ?? []).flatMap(
-            (child) =>
-                (child.pages ?? []).map((page) => ({
-                    ...page,
+        ...(menu.children ?? [])
+            .flatMap(
+                (child) =>
+                    (
+                        child.pages ?? []
+                    ).map(
+                        (page) => ({
+                            ...page,
 
-                    menu: page.menu ?? {
-                        id: child.id,
-                        title: child.title,
-                        slug: child.slug,
-                    },
-                }))
-        ),
+                            menu:
+                                page.menu ?? {
+                                    id:
+                                        child.id,
+
+                                    title:
+                                        child.title,
+
+                                    title_ar:
+                                        child.title_ar,
+
+                                    slug:
+                                        child.slug,
+                                },
+                        })
+                    )
+            ),
     ];
+
+    const DirectionArrow =
+        isArabic
+            ? ArrowBackIcon
+            : ArrowForwardIcon;
 
     return (
 
-        <Box>
+        <Box
+            dir={
+                isArabic
+                    ? "rtl"
+                    : "ltr"
+            }
+        >
 
             <Stack
                 direction={{
                     xs: "column",
-                    sm: "row",
+
+                    sm: isArabic
+                        ? "row-reverse"
+                        : "row",
                 }}
                 justifyContent="space-between"
                 alignItems={{
-                    xs: "flex-start",
+                    xs: isArabic
+                        ? "flex-end"
+                        : "flex-start",
+
                     sm: "flex-end",
                 }}
                 spacing={2}
                 sx={{
                     pb: 2.5,
-                    borderBottom: "1px solid",
-                    borderColor: alpha("#14213d", 0.08),
+
+                    borderBottom:
+                        "1px solid",
+
+                    borderColor:
+                        alpha(
+                            "#14213d",
+                            0.08
+                        ),
                 }}
             >
 
                 <Stack
-                    direction="row"
+                    direction={
+                        isArabic
+                            ? "row-reverse"
+                            : "row"
+                    }
                     spacing={1.5}
                     alignItems="center"
                 >
@@ -489,19 +893,42 @@ const MenuContentSection = ({
                         sx={{
                             width: 46,
                             height: 46,
-                            borderRadius: 2.5,
-                            bgcolor: alpha("#1976d2", 0.08),
-                            color: "primary.main",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
+
+                            borderRadius:
+                                2.5,
+
+                            bgcolor:
+                                alpha(
+                                    "#1976d2",
+                                    0.08
+                                ),
+
+                            color:
+                                "primary.main",
+
+                            display:
+                                "flex",
+
+                            alignItems:
+                                "center",
+
+                            justifyContent:
+                                "center",
+
                             flexShrink: 0,
                         }}
                     >
                         <MenuBookOutlinedIcon />
                     </Box>
 
-                    <Box>
+                    <Box
+                        sx={{
+                            textAlign:
+                                isArabic
+                                    ? "right"
+                                    : "left",
+                        }}
+                    >
 
                         <Typography
                             component="h2"
@@ -510,27 +937,43 @@ const MenuContentSection = ({
                                     xs: 24,
                                     md: 28,
                                 },
-                                fontWeight: 900,
-                                lineHeight: 1.15,
-                                color: "#10233f",
-                                letterSpacing: -0.5,
+
+                                fontWeight:
+                                    900,
+
+                                lineHeight:
+                                    isArabic
+                                        ? 1.5
+                                        : 1.15,
+
+                                color:
+                                    "#10233f",
+
+                                letterSpacing:
+                                    isArabic
+                                        ? 0
+                                        : -0.5,
                             }}
                         >
-                            {menu.title}
+                            {menuTitle}
                         </Typography>
 
                         <Typography
                             sx={{
                                 mt: 0.5,
-                                fontSize: 13.5,
-                                color: "text.secondary",
+
+                                fontSize:
+                                    13.5,
+
+                                color:
+                                    "text.secondary",
                             }}
                         >
-                            {menuPages.length} published {
-                                menuPages.length === 1
-                                    ? "page"
-                                    : "pages"
-                            }
+                            {menuPages.length}{" "}
+                            {menuPages.length ===
+                            1
+                                ? content.publishedPage
+                                : content.publishedPages}
                         </Typography>
 
                     </Box>
@@ -540,15 +983,34 @@ const MenuContentSection = ({
                 <Button
                     component={Link}
                     to={`/menu/${menu.slug}`}
-                    endIcon={<ArrowForwardIcon />}
+                    endIcon={
+                        <DirectionArrow />
+                    }
                     sx={{
-                        textTransform: "none",
-                        fontWeight: 800,
-                        borderRadius: 2,
+                        textTransform:
+                            "none",
+
+                        fontWeight:
+                            800,
+
+                        borderRadius:
+                            2,
+
                         px: 2,
+
+                        "& .MuiButton-endIcon":
+                            {
+                                ml: isArabic
+                                    ? 0
+                                    : 1,
+
+                                mr: isArabic
+                                    ? 1
+                                    : 0,
+                            },
                     }}
                 >
-                    View All
+                    {content.viewAll}
                 </Button>
 
             </Stack>
@@ -558,36 +1020,59 @@ const MenuContentSection = ({
                 <Grid
                     container
                     spacing={3}
-                    sx={{ mt: 1 }}
+                    sx={{
+                        mt: 1,
+                    }}
                 >
 
                     {menuPages
                         .slice(0, 3)
-                        .map((page) => (
+                        .map(
+                            (
+                                page
+                            ) => (
 
-                            <Grid
-                                item
-                                xs={12}
-                                sm={6}
-                                lg={4}
-                                key={`${menu.id}-${page.id}`}
-                            >
-
-                                <PageCard
-                                    page={{
-                                        ...page,
-
-                                        menu: page.menu ?? {
-                                            id: menu.id,
-                                            title: menu.title,
-                                            slug: menu.slug,
-                                        },
+                                <Grid
+                                    size={{
+                                        xs: 12,
+                                        sm: 6,
+                                        lg: 4,
                                     }}
-                                />
+                                    key={`${menu.id}-${page.id}`}
+                                >
 
-                            </Grid>
+                                    <PageCard
+                                        page={{
+                                            ...page,
 
-                        ))}
+                                            menu:
+                                                page.menu ??
+                                                {
+                                                    id:
+                                                        menu.id,
+
+                                                    title:
+                                                        menu.title,
+
+                                                    title_ar:
+                                                        menu.title_ar,
+
+                                                    slug:
+                                                        menu.slug,
+                                                },
+                                        }}
+                                        language={
+                                            language
+                                        }
+                                        isArabic={
+                                            isArabic
+                                        }
+                                    />
+
+                                </Grid>
+
+                            )
+                        )}
 
                 </Grid>
 
@@ -597,43 +1082,76 @@ const MenuContentSection = ({
                     severity="info"
                     sx={{
                         mt: 3,
-                        borderRadius: 2.5,
+
+                        borderRadius:
+                            2.5,
+
+                        textAlign:
+                            isArabic
+                                ? "right"
+                                : "left",
                     }}
                 >
-                    No published pages are currently available in this menu.
+                    {
+                        content.noMenuPages
+                    }
                 </Alert>
 
             )}
 
-            {menu.children?.length > 0 && (
+            {menu.children?.length >
+                0 && (
 
                 <Stack
-                    direction="row"
+                    direction={
+                        isArabic
+                            ? "row-reverse"
+                            : "row"
+                    }
                     flexWrap="wrap"
                     useFlexGap
                     spacing={1}
-                    sx={{ mt: 3 }}
+                    sx={{
+                        mt: 3,
+                    }}
                 >
 
-                    {menu.children.map((child) => (
+                    {menu.children.map(
+                        (
+                            child
+                        ) => (
 
-                        <Button
-                            key={child.id}
-                            component={Link}
-                            to={`/menu/${child.slug}`}
-                            variant="outlined"
-                            size="small"
-                            sx={{
-                                borderRadius: 20,
-                                textTransform: "none",
-                                fontWeight: 700,
-                                px: 2,
-                            }}
-                        >
-                            {child.title}
-                        </Button>
+                            <Button
+                                key={
+                                    child.id
+                                }
+                                component={
+                                    Link
+                                }
+                                to={`/menu/${child.slug}`}
+                                variant="outlined"
+                                size="small"
+                                sx={{
+                                    borderRadius:
+                                        20,
 
-                    ))}
+                                    textTransform:
+                                        "none",
+
+                                    fontWeight:
+                                        700,
+
+                                    px: 2,
+                                }}
+                            >
+                                {getLocalizedTitle(
+                                    child,
+                                    language
+                                )}
+                            </Button>
+
+                        )
+                    )}
 
                 </Stack>
 
@@ -649,162 +1167,261 @@ const SectionHeading = ({
     eyebrow,
     title,
     description,
-}) => {
+    isArabic = false,
+}) => (
 
-    return (
+    <Box
+        dir={
+            isArabic
+                ? "rtl"
+                : "ltr"
+        }
+        sx={{
+            maxWidth: 760,
 
-        <Box
+            ml: isArabic
+                ? "auto"
+                : 0,
+
+            mr: isArabic
+                ? 0
+                : "auto",
+
+            textAlign:
+                isArabic
+                    ? "right"
+                    : "left",
+        }}
+    >
+
+        <Typography
             sx={{
-                maxWidth: 760,
+                fontSize: 11,
+
+                fontWeight:
+                    900,
+
+                color:
+                    "primary.main",
+
+                textTransform:
+                    isArabic
+                        ? "none"
+                        : "uppercase",
+
+                letterSpacing:
+                    isArabic
+                        ? 0
+                        : 2,
+            }}
+        >
+            {eyebrow}
+        </Typography>
+
+        <Typography
+            component="h2"
+            sx={{
+                mt: 1.25,
+
+                fontSize: {
+                    xs: 30,
+                    sm: 38,
+                    md: 44,
+                },
+
+                fontWeight:
+                    900,
+
+                lineHeight:
+                    isArabic
+                        ? 1.45
+                        : 1.1,
+
+                letterSpacing:
+                    isArabic
+                        ? 0
+                        : -1,
+
+                color:
+                    "#10233f",
+            }}
+        >
+            {title}
+        </Typography>
+
+        <Typography
+            sx={{
+                mt: 2,
+
+                maxWidth: 680,
+
+                ml: isArabic
+                    ? "auto"
+                    : 0,
+
+                mr: isArabic
+                    ? 0
+                    : "auto",
+
+                fontSize: {
+                    xs: 15,
+                    md: 16.5,
+                },
+
+                lineHeight:
+                    isArabic
+                        ? 2
+                        : 1.75,
+
+                color:
+                    "text.secondary",
+            }}
+        >
+            {description}
+        </Typography>
+
+    </Box>
+
+);
+
+const FeaturedSkeleton = () => (
+
+    <Box sx={{ mt: 5 }}>
+
+        <Skeleton
+            variant="rounded"
+            height={420}
+            sx={{
+                borderRadius:
+                    4,
+            }}
+        />
+
+        <Grid
+            container
+            spacing={3}
+            sx={{
+                mt: 1,
             }}
         >
 
-            <Typography
-                sx={{
-                    fontSize: 11,
-                    fontWeight: 900,
-                    color: "primary.main",
-                    textTransform: "uppercase",
-                    letterSpacing: 2,
-                }}
-            >
-                {eyebrow}
-            </Typography>
-
-            <Typography
-                component="h2"
-                sx={{
-                    mt: 1.25,
-                    fontSize: {
-                        xs: 30,
-                        sm: 38,
-                        md: 44,
-                    },
-                    fontWeight: 900,
-                    lineHeight: 1.1,
-                    letterSpacing: -1,
-                    color: "#10233f",
-                }}
-            >
-                {title}
-            </Typography>
-
-            <Typography
-                sx={{
-                    mt: 2,
-                    maxWidth: 680,
-                    fontSize: {
-                        xs: 15,
-                        md: 16.5,
-                    },
-                    lineHeight: 1.75,
-                    color: "text.secondary",
-                }}
-            >
-                {description}
-            </Typography>
-
-        </Box>
-
-    );
-
-};
-
-const FeaturedSkeleton = () => {
-
-    return (
-
-        <Box sx={{ mt: 5 }}>
-
-            <Skeleton
-                variant="rounded"
-                height={420}
-                sx={{
-                    borderRadius: 4,
-                }}
-            />
-
-            <Grid
-                container
-                spacing={3}
-                sx={{ mt: 1 }}
-            >
-
-                {[1, 2, 3].map((item) => (
+            {[1, 2, 3].map(
+                (
+                    item
+                ) => (
 
                     <Grid
-                        item
-                        xs={12}
-                        md={4}
-                        key={item}
+                        size={{
+                            xs: 12,
+                            md: 4,
+                        }}
+                        key={
+                            item
+                        }
                     >
+
                         <Skeleton
                             variant="rounded"
                             height={360}
                             sx={{
-                                borderRadius: 4,
+                                borderRadius:
+                                    4,
                             }}
                         />
+
                     </Grid>
 
-                ))}
+                )
+            )}
 
-            </Grid>
+        </Grid>
 
-        </Box>
+    </Box>
 
-    );
+);
 
-};
+const EmptyContent = ({
+    title,
+    description,
+    isArabic = false,
+}) => (
 
-const EmptyContent = () => {
+    <Box
+        sx={{
+            mt: 5,
+            py: 8,
+            px: 3,
 
-    return (
+            textAlign:
+                "center",
 
-        <Box
+            borderRadius:
+                4,
+
+            border:
+                "1px dashed",
+
+            borderColor:
+                alpha(
+                    "#14213d",
+                    0.14
+                ),
+
+            bgcolor:
+                "#fff",
+        }}
+    >
+
+        <DescriptionOutlinedIcon
             sx={{
-                mt: 5,
-                py: 8,
-                px: 3,
-                textAlign: "center",
-                borderRadius: 4,
-                border: "1px dashed",
-                borderColor: alpha("#14213d", 0.14),
-                bgcolor: "#fff",
+                fontSize:
+                    58,
+
+                color:
+                    "text.disabled",
+            }}
+        />
+
+        <Typography
+            sx={{
+                mt: 2,
+
+                fontSize:
+                    20,
+
+                fontWeight:
+                    800,
+
+                color:
+                    "#10233f",
+
+                lineHeight:
+                    isArabic
+                        ? 1.6
+                        : 1.3,
             }}
         >
+            {title}
+        </Typography>
 
-            <DescriptionOutlinedIcon
-                sx={{
-                    fontSize: 58,
-                    color: "text.disabled",
-                }}
-            />
+        <Typography
+            sx={{
+                mt: 1,
 
-            <Typography
-                sx={{
-                    mt: 2,
-                    fontSize: 20,
-                    fontWeight: 800,
-                    color: "#10233f",
-                }}
-            >
-                No published pages available
-            </Typography>
+                color:
+                    "text.secondary",
 
-            <Typography
-                sx={{
-                    mt: 1,
-                    color: "text.secondary",
-                }}
-            >
-                Published and due pages will appear here automatically.
-            </Typography>
+                lineHeight:
+                    isArabic
+                        ? 1.9
+                        : 1.6,
+            }}
+        >
+            {description}
+        </Typography>
 
-        </Box>
+    </Box>
 
-    );
-
-};
+);
 
 export default Home;

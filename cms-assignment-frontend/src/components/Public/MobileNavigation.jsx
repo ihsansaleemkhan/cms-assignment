@@ -17,6 +17,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import KeyboardArrowRightIcon from "@mui/icons-material/KeyboardArrowRight";
+import KeyboardArrowLeftIcon from "@mui/icons-material/KeyboardArrowLeft";
 import LanguageIcon from "@mui/icons-material/Language";
 import MenuBookOutlinedIcon from "@mui/icons-material/MenuBookOutlined";
 import DescriptionOutlinedIcon from "@mui/icons-material/DescriptionOutlined";
@@ -32,61 +33,141 @@ import {
     useState,
 } from "react";
 
+import {
+    getLocalizedTitle,
+} from "../../utils/localization";
+
 const MobileNavigation = ({
     open,
     menus = [],
+    language = "en",
+    isArabic = false,
+    onLanguageToggle,
     onClose,
 }) => {
 
     const location = useLocation();
 
-    const [expandedMenus, setExpandedMenus] = useState({});
+    const [expandedMenus, setExpandedMenus] =
+        useState({});
 
     useEffect(() => {
+
         if (!open) {
             setExpandedMenus({});
         }
+
     }, [open]);
 
     const toggleMenu = (menuId) => {
+
         setExpandedMenus((previous) => ({
             ...previous,
             [menuId]: !previous[menuId],
         }));
+
     };
 
     const isPathActive = (path) => {
+
         return location.pathname === path;
+
     };
 
     const hasMenuContent = (menu) => {
+
         return (
             menu.pages?.length > 0 ||
             menu.children?.length > 0
         );
+
     };
+
+    const visibleMenus = menus.filter((menu) => {
+
+        const isHomeMenu =
+            menu.slug === "home" ||
+            menu.slug === "home-page";
+
+        if (isHomeMenu) {
+            return false;
+        }
+
+        return (
+            menu.pages?.length > 0 ||
+            menu.children?.some(
+                (child) =>
+                    child.pages?.length > 0
+            )
+        );
+
+    });
+
+    const homeLabel =
+        isArabic
+            ? "الرئيسية"
+            : "Home";
+
+    const navigationLabel =
+        isArabic
+            ? "التنقل"
+            : "Navigation";
+
+    const viewAllLabel =
+        isArabic
+            ? "عرض الكل"
+            : "View all";
+
+    const languageTitle =
+        isArabic
+            ? "اللغة"
+            : "Language";
+
+    const languageDescription =
+        isArabic
+            ? "التبديل إلى اللغة الإنجليزية"
+            : "Switch to Arabic";
 
     return (
 
         <Drawer
-            anchor="right"
+            anchor={
+                isArabic
+                    ? "left"
+                    : "right"
+            }
             open={open}
             onClose={onClose}
             ModalProps={{
                 keepMounted: true,
             }}
             PaperProps={{
+                dir: isArabic
+                    ? "rtl"
+                    : "ltr",
+
                 sx: {
                     width: {
                         xs: "88vw",
                         sm: 390,
                     },
+
                     maxWidth: 420,
                     bgcolor: "#fff",
-                    borderLeft: "1px solid",
+
+                    borderLeft: isArabic
+                        ? "none"
+                        : "1px solid",
+
+                    borderRight: isArabic
+                        ? "1px solid"
+                        : "none",
+
                     borderColor: "divider",
-                    boxShadow:
-                        "-16px 0 48px rgba(15,23,42,0.16)",
+
+                    boxShadow: isArabic
+                        ? "16px 0 48px rgba(15,23,42,0.16)"
+                        : "-16px 0 48px rgba(15,23,42,0.16)",
                 },
             }}
         >
@@ -96,6 +177,9 @@ const MobileNavigation = ({
                     minHeight: "100%",
                     display: "flex",
                     flexDirection: "column",
+                    fontFamily: isArabic
+                        ? "'Noto Sans Arabic', Tahoma, Arial, sans-serif"
+                        : "inherit",
                 }}
             >
 
@@ -112,17 +196,27 @@ const MobileNavigation = ({
                 >
 
                     <Stack
-                        direction="row"
+                        direction={
+                            isArabic
+                                ? "row-reverse"
+                                : "row"
+                        }
                         alignItems="center"
                         justifyContent="space-between"
                         spacing={2}
                     >
 
                         <Stack
-                            direction="row"
+                            direction={
+                                isArabic
+                                    ? "row-reverse"
+                                    : "row"
+                            }
                             alignItems="center"
                             spacing={1.25}
-                            sx={{ minWidth: 0 }}
+                            sx={{
+                                minWidth: 0,
+                            }}
                         >
 
                             <Box
@@ -142,11 +236,20 @@ const MobileNavigation = ({
                                 }}
                             >
                                 <WebAssetIcon
-                                    sx={{ fontSize: 22 }}
+                                    sx={{
+                                        fontSize: 22,
+                                    }}
                                 />
                             </Box>
 
-                            <Box sx={{ minWidth: 0 }}>
+                            <Box
+                                sx={{
+                                    minWidth: 0,
+                                    textAlign: isArabic
+                                        ? "right"
+                                        : "left",
+                                }}
+                            >
 
                                 <Typography
                                     sx={{
@@ -164,14 +267,21 @@ const MobileNavigation = ({
 
                                 <Typography
                                     sx={{
+                                        mt: 0.25,
                                         fontSize: 9.5,
                                         fontWeight: 800,
                                         color: "primary.main",
-                                        letterSpacing: 1.7,
-                                        textTransform: "uppercase",
+                                        letterSpacing: isArabic
+                                            ? 0
+                                            : 1.7,
+                                        textTransform: isArabic
+                                            ? "none"
+                                            : "uppercase",
                                     }}
                                 >
-                                    Digital Experience
+                                    {isArabic
+                                        ? "تجربة رقمية"
+                                        : "Digital Experience"}
                                 </Typography>
 
                             </Box>
@@ -181,12 +291,25 @@ const MobileNavigation = ({
                         <IconButton
                             onClick={onClose}
                             size="small"
+                            aria-label={
+                                isArabic
+                                    ? "إغلاق القائمة"
+                                    : "Close navigation"
+                            }
                             sx={{
-                                bgcolor: alpha("#14213d", 0.05),
+                                bgcolor:
+                                    alpha(
+                                        "#14213d",
+                                        0.05
+                                    ),
                                 color: "#10233f",
 
                                 "&:hover": {
-                                    bgcolor: alpha("#14213d", 0.1),
+                                    bgcolor:
+                                        alpha(
+                                            "#14213d",
+                                            0.1
+                                        ),
                                 },
                             }}
                         >
@@ -215,14 +338,23 @@ const MobileNavigation = ({
                             fontSize: 10.5,
                             fontWeight: 800,
                             color: "text.disabled",
-                            letterSpacing: 1.6,
-                            textTransform: "uppercase",
+                            letterSpacing: isArabic
+                                ? 0
+                                : 1.6,
+                            textTransform: isArabic
+                                ? "none"
+                                : "uppercase",
+                            textAlign: isArabic
+                                ? "right"
+                                : "left",
                         }}
                     >
-                        Navigation
+                        {navigationLabel}
                     </Typography>
 
                     <List disablePadding>
+
+                        {/* Home */}
 
                         <ListItemButton
                             component={Link}
@@ -237,11 +369,18 @@ const MobileNavigation = ({
                                     ? "primary.main"
                                     : "text.secondary",
                                 bgcolor: isPathActive("/")
-                                    ? alpha("#1976d2", 0.08)
+                                    ? alpha(
+                                        "#1976d2",
+                                        0.08
+                                    )
                                     : "transparent",
 
                                 "&:hover": {
-                                    bgcolor: alpha("#1976d2", 0.06),
+                                    bgcolor:
+                                        alpha(
+                                            "#1976d2",
+                                            0.06
+                                        ),
                                     color: "primary.main",
                                 },
                             }}
@@ -257,16 +396,21 @@ const MobileNavigation = ({
                             </ListItemIcon>
 
                             <ListItemText
-                                primary="Home"
+                                primary={homeLabel}
                                 primaryTypographyProps={{
                                     fontSize: 14,
                                     fontWeight: 700,
+                                    textAlign: isArabic
+                                        ? "right"
+                                        : "left",
                                 }}
                             />
 
                         </ListItemButton>
 
-                        {menus.map((menu) => {
+                        {/* Dynamic menus */}
+
+                        {visibleMenus.map((menu) => {
 
                             const expanded =
                                 Boolean(
@@ -276,10 +420,36 @@ const MobileNavigation = ({
                             const menuActive =
                                 isPathActive(
                                     `/menu/${menu.slug}`
+                                ) ||
+                                (menu.pages ?? []).some(
+                                    (page) =>
+                                        isPathActive(
+                                            `/page/${page.slug}`
+                                        )
+                                ) ||
+                                (menu.children ?? []).some(
+                                    (child) =>
+                                        isPathActive(
+                                            `/menu/${child.slug}`
+                                        ) ||
+                                        (
+                                            child.pages ?? []
+                                        ).some(
+                                            (page) =>
+                                                isPathActive(
+                                                    `/page/${page.slug}`
+                                                )
+                                        )
                                 );
 
                             const expandable =
                                 hasMenuContent(menu);
+
+                            const menuTitle =
+                                getLocalizedTitle(
+                                    menu,
+                                    language
+                                );
 
                             return (
 
@@ -287,12 +457,17 @@ const MobileNavigation = ({
 
                                     <ListItemButton
                                         onClick={() => {
+
                                             if (expandable) {
-                                                toggleMenu(menu.id);
+                                                toggleMenu(
+                                                    menu.id
+                                                );
+
                                                 return;
                                             }
 
                                             onClose();
+
                                         }}
                                         component={
                                             expandable
@@ -341,21 +516,32 @@ const MobileNavigation = ({
                                         </ListItemIcon>
 
                                         <ListItemText
-                                            primary={menu.title}
+                                            primary={menuTitle}
                                             primaryTypographyProps={{
                                                 fontSize: 14,
                                                 fontWeight: 700,
+                                                textAlign: isArabic
+                                                    ? "right"
+                                                    : "left",
                                             }}
                                         />
 
                                         {expandable && (
-                                            expanded
-                                                ? (
-                                                    <KeyboardArrowDownIcon />
-                                                )
-                                                : (
-                                                    <KeyboardArrowRightIcon />
-                                                )
+
+                                            expanded ? (
+
+                                                <KeyboardArrowDownIcon />
+
+                                            ) : isArabic ? (
+
+                                                <KeyboardArrowLeftIcon />
+
+                                            ) : (
+
+                                                <KeyboardArrowRightIcon />
+
+                                            )
+
                                         )}
 
                                     </ListItemButton>
@@ -370,11 +556,32 @@ const MobileNavigation = ({
 
                                             <Box
                                                 sx={{
-                                                    ml: 2,
-                                                    pl: 1.5,
+                                                    ml: isArabic
+                                                        ? 0
+                                                        : 2,
+
+                                                    mr: isArabic
+                                                        ? 2
+                                                        : 0,
+
+                                                    pl: isArabic
+                                                        ? 0
+                                                        : 1.5,
+
+                                                    pr: isArabic
+                                                        ? 1.5
+                                                        : 0,
+
                                                     mb: 1,
-                                                    borderLeft:
-                                                        "1px solid",
+
+                                                    borderLeft: isArabic
+                                                        ? "none"
+                                                        : "1px solid",
+
+                                                    borderRight: isArabic
+                                                        ? "1px solid"
+                                                        : "none",
+
                                                     borderColor:
                                                         alpha(
                                                             "#1976d2",
@@ -383,6 +590,8 @@ const MobileNavigation = ({
                                                 }}
                                             >
 
+                                                {/* View all */}
+
                                                 <ListItemButton
                                                     component={Link}
                                                     to={`/menu/${menu.slug}`}
@@ -390,7 +599,8 @@ const MobileNavigation = ({
                                                     sx={{
                                                         py: 0.85,
                                                         px: 1.25,
-                                                        borderRadius: 1.75,
+                                                        borderRadius:
+                                                            1.75,
                                                         color:
                                                             "primary.main",
 
@@ -405,14 +615,24 @@ const MobileNavigation = ({
                                                 >
 
                                                     <ListItemText
-                                                        primary={`View all ${menu.title}`}
+                                                        primary={
+                                                            isArabic
+                                                                ? `${viewAllLabel} ${menuTitle}`
+                                                                : `${viewAllLabel} ${menuTitle}`
+                                                        }
                                                         primaryTypographyProps={{
                                                             fontSize: 13,
                                                             fontWeight: 800,
+                                                            textAlign:
+                                                                isArabic
+                                                                    ? "right"
+                                                                    : "left",
                                                         }}
                                                     />
 
                                                 </ListItemButton>
+
+                                                {/* Root pages */}
 
                                                 {menu.pages?.map(
                                                     (page) => (
@@ -425,13 +645,24 @@ const MobileNavigation = ({
                                                             sx={{
                                                                 py: 0.85,
                                                                 px: 1.25,
-                                                                borderRadius: 1.75,
+                                                                borderRadius:
+                                                                    1.75,
                                                                 color:
                                                                     isPathActive(
                                                                         `/page/${page.slug}`
                                                                     )
                                                                         ? "primary.main"
                                                                         : "text.secondary",
+
+                                                                bgcolor:
+                                                                    isPathActive(
+                                                                        `/page/${page.slug}`
+                                                                    )
+                                                                        ? alpha(
+                                                                            "#1976d2",
+                                                                            0.06
+                                                                        )
+                                                                        : "transparent",
 
                                                                 "&:hover": {
                                                                     bgcolor:
@@ -447,7 +678,8 @@ const MobileNavigation = ({
 
                                                             <ListItemIcon
                                                                 sx={{
-                                                                    minWidth: 30,
+                                                                    minWidth:
+                                                                        30,
                                                                     color:
                                                                         "inherit",
                                                                 }}
@@ -461,10 +693,21 @@ const MobileNavigation = ({
                                                             </ListItemIcon>
 
                                                             <ListItemText
-                                                                primary={page.title}
+                                                                primary={
+                                                                    getLocalizedTitle(
+                                                                        page,
+                                                                        language
+                                                                    )
+                                                                }
                                                                 primaryTypographyProps={{
-                                                                    fontSize: 13,
-                                                                    fontWeight: 600,
+                                                                    fontSize:
+                                                                        13,
+                                                                    fontWeight:
+                                                                        600,
+                                                                    textAlign:
+                                                                        isArabic
+                                                                            ? "right"
+                                                                            : "left",
                                                                 }}
                                                             />
 
@@ -473,121 +716,181 @@ const MobileNavigation = ({
                                                     )
                                                 )}
 
+                                                {/* Child menus */}
+
                                                 {menu.children?.map(
-                                                    (child) => (
+                                                    (child) => {
 
-                                                        <Box
-                                                            key={child.id}
-                                                            sx={{ mt: 0.5 }}
-                                                        >
+                                                        const childTitle =
+                                                            getLocalizedTitle(
+                                                                child,
+                                                                language
+                                                            );
 
-                                                            <ListItemButton
-                                                                component={Link}
-                                                                to={`/menu/${child.slug}`}
-                                                                onClick={onClose}
+                                                        return (
+
+                                                            <Box
+                                                                key={
+                                                                    child.id
+                                                                }
                                                                 sx={{
-                                                                    py: 0.8,
-                                                                    px: 1.25,
-                                                                    borderRadius: 1.75,
-                                                                    color:
-                                                                        "text.primary",
-
-                                                                    "&:hover": {
-                                                                        bgcolor:
-                                                                            alpha(
-                                                                                "#1976d2",
-                                                                                0.05
-                                                                            ),
-                                                                    },
+                                                                    mt: 0.5,
                                                                 }}
                                                             >
 
-                                                                <ListItemText
-                                                                    primary={
-                                                                        child.title
+                                                                <ListItemButton
+                                                                    component={
+                                                                        Link
                                                                     }
-                                                                    primaryTypographyProps={{
-                                                                        fontSize:
-                                                                            12.5,
-                                                                        fontWeight:
-                                                                            800,
+                                                                    to={`/menu/${child.slug}`}
+                                                                    onClick={
+                                                                        onClose
+                                                                    }
+                                                                    sx={{
+                                                                        py: 0.8,
+                                                                        px: 1.25,
+                                                                        borderRadius:
+                                                                            1.75,
+                                                                        color:
+                                                                            isPathActive(
+                                                                                `/menu/${child.slug}`
+                                                                            )
+                                                                                ? "primary.main"
+                                                                                : "text.primary",
+
+                                                                        "&:hover":
+                                                                            {
+                                                                                bgcolor:
+                                                                                    alpha(
+                                                                                        "#1976d2",
+                                                                                        0.05
+                                                                                    ),
+                                                                            },
                                                                     }}
-                                                                />
+                                                                >
 
-                                                            </ListItemButton>
-
-                                                            {child.pages?.map(
-                                                                (page) => (
-
-                                                                    <ListItemButton
-                                                                        key={
-                                                                            page.id
+                                                                    <ListItemText
+                                                                        primary={
+                                                                            childTitle
                                                                         }
-                                                                        component={
-                                                                            Link
-                                                                        }
-                                                                        to={`/page/${page.slug}`}
-                                                                        onClick={
-                                                                            onClose
-                                                                        }
-                                                                        sx={{
-                                                                            ml: 1,
-                                                                            py: 0.75,
-                                                                            px: 1.25,
-                                                                            borderRadius:
-                                                                                1.75,
-                                                                            color:
-                                                                                "text.secondary",
+                                                                        primaryTypographyProps={{
+                                                                            fontSize:
+                                                                                12.5,
+                                                                            fontWeight:
+                                                                                800,
+                                                                            textAlign:
+                                                                                isArabic
+                                                                                    ? "right"
+                                                                                    : "left",
+                                                                        }}
+                                                                    />
 
-                                                                            "&:hover":
-                                                                                {
-                                                                                    bgcolor:
-                                                                                        alpha(
+                                                                </ListItemButton>
+
+                                                                {child.pages?.map(
+                                                                    (
+                                                                        page
+                                                                    ) => (
+
+                                                                        <ListItemButton
+                                                                            key={
+                                                                                page.id
+                                                                            }
+                                                                            component={
+                                                                                Link
+                                                                            }
+                                                                            to={`/page/${page.slug}`}
+                                                                            onClick={
+                                                                                onClose
+                                                                            }
+                                                                            sx={{
+                                                                                ml: isArabic
+                                                                                    ? 0
+                                                                                    : 1,
+
+                                                                                mr: isArabic
+                                                                                    ? 1
+                                                                                    : 0,
+
+                                                                                py: 0.75,
+                                                                                px: 1.25,
+                                                                                borderRadius:
+                                                                                    1.75,
+                                                                                color:
+                                                                                    isPathActive(
+                                                                                        `/page/${page.slug}`
+                                                                                    )
+                                                                                        ? "primary.main"
+                                                                                        : "text.secondary",
+
+                                                                                bgcolor:
+                                                                                    isPathActive(
+                                                                                        `/page/${page.slug}`
+                                                                                    )
+                                                                                        ? alpha(
                                                                                             "#1976d2",
                                                                                             0.05
-                                                                                        ),
-                                                                                    color:
-                                                                                        "primary.main",
-                                                                                },
-                                                                        }}
-                                                                    >
+                                                                                        )
+                                                                                        : "transparent",
 
-                                                                        <ListItemIcon
-                                                                            sx={{
-                                                                                minWidth:
-                                                                                    28,
-                                                                                color:
-                                                                                    "inherit",
+                                                                                "&:hover":
+                                                                                    {
+                                                                                        bgcolor:
+                                                                                            alpha(
+                                                                                                "#1976d2",
+                                                                                                0.05
+                                                                                            ),
+                                                                                        color:
+                                                                                            "primary.main",
+                                                                                    },
                                                                             }}
                                                                         >
-                                                                            <DescriptionOutlinedIcon
+
+                                                                            <ListItemIcon
                                                                                 sx={{
+                                                                                    minWidth:
+                                                                                        28,
+                                                                                    color:
+                                                                                        "inherit",
+                                                                                }}
+                                                                            >
+                                                                                <DescriptionOutlinedIcon
+                                                                                    sx={{
+                                                                                        fontSize:
+                                                                                            16,
+                                                                                    }}
+                                                                                />
+                                                                            </ListItemIcon>
+
+                                                                            <ListItemText
+                                                                                primary={
+                                                                                    getLocalizedTitle(
+                                                                                        page,
+                                                                                        language
+                                                                                    )
+                                                                                }
+                                                                                primaryTypographyProps={{
                                                                                     fontSize:
-                                                                                        16,
+                                                                                        12.5,
+                                                                                    fontWeight:
+                                                                                        600,
+                                                                                    textAlign:
+                                                                                        isArabic
+                                                                                            ? "right"
+                                                                                            : "left",
                                                                                 }}
                                                                             />
-                                                                        </ListItemIcon>
 
-                                                                        <ListItemText
-                                                                            primary={
-                                                                                page.title
-                                                                            }
-                                                                            primaryTypographyProps={{
-                                                                                fontSize:
-                                                                                    12.5,
-                                                                                fontWeight:
-                                                                                    600,
-                                                                            }}
-                                                                        />
+                                                                        </ListItemButton>
 
-                                                                    </ListItemButton>
+                                                                    )
+                                                                )}
 
-                                                                )
-                                                            )}
+                                                            </Box>
 
-                                                        </Box>
+                                                        );
 
-                                                    )
+                                                    }
                                                 )}
 
                                             </Box>
@@ -606,7 +909,7 @@ const MobileNavigation = ({
 
                 </Box>
 
-                {/* Language placeholder */}
+                {/* Language switch */}
 
                 <Box
                     sx={{
@@ -618,33 +921,95 @@ const MobileNavigation = ({
                 >
 
                     <ListItemButton
-                        disabled
+                        onClick={() => {
+
+                            onLanguageToggle?.();
+
+                            onClose?.();
+
+                        }}
                         sx={{
                             borderRadius: 2,
                             px: 1.5,
                             py: 1,
+                            border: "1px solid",
+                            borderColor:
+                                alpha(
+                                    "#1976d2",
+                                    0.12
+                                ),
+
+                            "&:hover": {
+                                bgcolor:
+                                    alpha(
+                                        "#1976d2",
+                                        0.06
+                                    ),
+                                borderColor:
+                                    alpha(
+                                        "#1976d2",
+                                        0.3
+                                    ),
+                            },
                         }}
                     >
 
                         <ListItemIcon
                             sx={{
                                 minWidth: 38,
+                                color: "primary.main",
                             }}
                         >
                             <LanguageIcon />
                         </ListItemIcon>
 
                         <ListItemText
-                            primary="English"
-                            secondary="Arabic support coming next"
+                            primary={languageTitle}
+                            secondary={
+                                languageDescription
+                            }
                             primaryTypographyProps={{
                                 fontSize: 13.5,
                                 fontWeight: 700,
+                                textAlign: isArabic
+                                    ? "right"
+                                    : "left",
                             }}
                             secondaryTypographyProps={{
                                 fontSize: 11,
+                                textAlign: isArabic
+                                    ? "right"
+                                    : "left",
                             }}
                         />
+
+                        <Typography
+                            sx={{
+                                ml: isArabic
+                                    ? 0
+                                    : 1,
+
+                                mr: isArabic
+                                    ? 1
+                                    : 0,
+
+                                px: 1.1,
+                                py: 0.4,
+                                borderRadius: 1.5,
+                                bgcolor:
+                                    alpha(
+                                        "#1976d2",
+                                        0.08
+                                    ),
+                                color: "primary.main",
+                                fontSize: 11,
+                                fontWeight: 800,
+                            }}
+                        >
+                            {isArabic
+                                ? "EN"
+                                : "AR"}
+                        </Typography>
 
                     </ListItemButton>
 

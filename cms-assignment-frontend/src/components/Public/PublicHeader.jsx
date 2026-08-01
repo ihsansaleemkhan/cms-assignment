@@ -1,4 +1,7 @@
-import { useMemo, useState } from "react";
+import {
+    useMemo,
+    useState,
+} from "react";
 
 import {
     AppBar,
@@ -26,21 +29,32 @@ import {
     useLocation,
 } from "react-router-dom";
 
+import {
+    getLocalizedTitle,
+} from "../../utils/localization";
+
 const PublicHeader = ({
     menus = [],
+    language = "en",
+    isArabic = false,
+    onLanguageToggle,
     onMenuOpen,
 }) => {
 
     const location = useLocation();
 
-    const [anchorEl, setAnchorEl] = useState(null);
+    const [anchorEl, setAnchorEl] =
+        useState(null);
 
-    const [activeMenu, setActiveMenu] = useState(null);
+    const [activeMenu, setActiveMenu] =
+        useState(null);
 
-    const dropdownOpen = Boolean(anchorEl);
+    const dropdownOpen =
+        Boolean(anchorEl);
 
     const visibleMenus = useMemo(
         () => menus.filter((menu) => {
+
             const isHomeMenu =
                 menu.slug === "home" ||
                 menu.slug === "home-page";
@@ -56,6 +70,7 @@ const PublicHeader = ({
                         child.pages?.length > 0
                 )
             );
+
         }),
         [menus]
     );
@@ -64,23 +79,36 @@ const PublicHeader = ({
         event,
         menu
     ) => {
-        setAnchorEl(event.currentTarget);
+
+        setAnchorEl(
+            event.currentTarget
+        );
+
         setActiveMenu(menu);
+
     };
 
     const handleDropdownClose = () => {
+
         setAnchorEl(null);
+
         setActiveMenu(null);
+
     };
 
-    const hasChildrenOrPages = (menu) => {
+    const hasChildrenOrPages = (
+        menu
+    ) => {
+
         return (
             menu.pages?.length > 0 ||
             menu.children?.length > 0
         );
+
     };
 
     const isMenuActive = (menu) => {
+
         if (
             location.pathname ===
             `/menu/${menu.slug}`
@@ -93,32 +121,64 @@ const PublicHeader = ({
                 (page) => page.slug
             ),
 
-            ...(menu.children ?? []).flatMap(
-                (child) =>
-                    (child.pages ?? []).map(
-                        (page) => page.slug
-                    )
-            ),
+            ...(menu.children ?? [])
+                .flatMap(
+                    (child) =>
+                        (
+                            child.pages ?? []
+                        ).map(
+                            (page) =>
+                                page.slug
+                        )
+                ),
         ];
 
         return pageSlugs.some(
-            (slug) =>
+            (pageSlug) =>
                 location.pathname ===
-                `/page/${slug}`
+                `/page/${pageSlug}`
         );
+
     };
+
+    const homeLabel =
+        isArabic
+            ? "الرئيسية"
+            : "Home";
+
+    const pagesLabel =
+        isArabic
+            ? "الصفحات"
+            : "Pages";
+
+    const viewAllLabel =
+        isArabic
+            ? "عرض الكل"
+            : "View all";
 
     return (
 
         <AppBar
             position="fixed"
             elevation={0}
+            dir={
+                isArabic
+                    ? "rtl"
+                    : "ltr"
+            }
             sx={{
-                bgcolor: "rgba(255,255,255,0.92)",
+                bgcolor:
+                    "rgba(255,255,255,0.92)",
                 color: "#14213d",
-                backdropFilter: "blur(16px)",
-                borderBottom: "1px solid",
-                borderColor: alpha("#14213d", 0.08),
+                backdropFilter:
+                    "blur(16px)",
+                borderBottom:
+                    "1px solid",
+                borderColor:
+                    alpha(
+                        "#14213d",
+                        0.08
+                    ),
                 boxShadow:
                     "0 6px 30px rgba(15,23,42,0.05)",
             }}
@@ -141,7 +201,13 @@ const PublicHeader = ({
                             xs: 68,
                             md: 76,
                         },
+
                         gap: 2,
+
+                        flexDirection:
+                            isArabic
+                                ? "row-reverse"
+                                : "row",
                     }}
                 >
 
@@ -152,11 +218,18 @@ const PublicHeader = ({
                         to="/"
                         sx={{
                             display: "flex",
-                            alignItems: "center",
+                            alignItems:
+                                "center",
                             gap: 1.35,
                             color: "inherit",
-                            textDecoration: "none",
+                            textDecoration:
+                                "none",
                             flexShrink: 0,
+
+                            flexDirection:
+                                isArabic
+                                    ? "row-reverse"
+                                    : "row",
                         }}
                     >
 
@@ -169,18 +242,30 @@ const PublicHeader = ({
                                     "linear-gradient(135deg, #1565c0 0%, #42a5f5 100%)",
                                 color: "#fff",
                                 display: "flex",
-                                alignItems: "center",
-                                justifyContent: "center",
+                                alignItems:
+                                    "center",
+                                justifyContent:
+                                    "center",
                                 boxShadow:
                                     "0 8px 22px rgba(25,118,210,0.28)",
+                                flexShrink: 0,
                             }}
                         >
                             <WebAssetIcon
-                                sx={{ fontSize: 24 }}
+                                sx={{
+                                    fontSize: 24,
+                                }}
                             />
                         </Box>
 
-                        <Box>
+                        <Box
+                            sx={{
+                                textAlign:
+                                    isArabic
+                                        ? "right"
+                                        : "left",
+                            }}
+                        >
 
                             <Typography
                                 sx={{
@@ -189,9 +274,12 @@ const PublicHeader = ({
                                         xs: 16,
                                         md: 18,
                                     },
-                                    letterSpacing: -0.35,
+                                    letterSpacing:
+                                        -0.35,
                                     lineHeight: 1.1,
                                     color: "#10233f",
+                                    whiteSpace:
+                                        "nowrap",
                                 }}
                             >
                                 Ihsan Saleemkhan
@@ -201,25 +289,39 @@ const PublicHeader = ({
                                 sx={{
                                     fontSize: 9.5,
                                     fontWeight: 800,
-                                    color: "primary.main",
-                                    textTransform: "uppercase",
+                                    color:
+                                        "primary.main",
+                                    textTransform:
+                                        "uppercase",
                                     letterSpacing: 2,
                                     lineHeight: 1.2,
+                                    whiteSpace:
+                                        "nowrap",
                                 }}
                             >
-                                Digital Experience
+                                {isArabic
+                                    ? "تجربة رقمية"
+                                    : "Digital Experience"}
                             </Typography>
 
                         </Box>
 
                     </Box>
 
-                    <Box sx={{ flexGrow: 1 }} />
+                    <Box
+                        sx={{
+                            flexGrow: 1,
+                        }}
+                    />
 
                     {/* Desktop Navigation */}
 
                     <Stack
-                        direction="row"
+                        direction={
+                            isArabic
+                                ? "row-reverse"
+                                : "row"
+                        }
                         alignItems="center"
                         spacing={0.5}
                         sx={{
@@ -239,12 +341,15 @@ const PublicHeader = ({
                                 px: 1.75,
                                 py: 1,
                                 borderRadius: 2,
-                                textTransform: "none",
+                                textTransform:
+                                    "none",
                                 fontWeight: 700,
-                                color: "text.secondary",
+                                color:
+                                    "text.secondary",
 
                                 "&.active": {
-                                    color: "primary.main",
+                                    color:
+                                        "primary.main",
                                     bgcolor:
                                         alpha(
                                             "#1976d2",
@@ -258,137 +363,224 @@ const PublicHeader = ({
                                             "#1976d2",
                                             0.06
                                         ),
-                                    color: "primary.main",
+                                    color:
+                                        "primary.main",
                                 },
                             }}
                         >
-                            Home
+                            {homeLabel}
                         </Button>
 
-                        {visibleMenus.map((menu) => {
+                        {visibleMenus.map(
+                            (menu) => {
 
-                            const menuActive =
-                                isMenuActive(menu);
+                                const menuActive =
+                                    isMenuActive(
+                                        menu
+                                    );
 
-                            return (
+                                const menuTitle =
+                                    getLocalizedTitle(
+                                        menu,
+                                        language
+                                    );
 
-                                <Button
-                                    key={menu.id}
-                                    component={
-                                        hasChildrenOrPages(
-                                            menu
-                                        )
-                                            ? "button"
-                                            : NavLink
-                                    }
-                                    to={
-                                        hasChildrenOrPages(
-                                            menu
-                                        )
-                                            ? undefined
-                                            : `/menu/${menu.slug}`
-                                    }
-                                    end
-                                    onClick={
-                                        hasChildrenOrPages(
-                                            menu
-                                        )
-                                            ? (event) =>
-                                                handleDropdownOpen(
-                                                    event,
-                                                    menu
+                                return (
+
+                                    <Button
+                                        key={
+                                            menu.id
+                                        }
+                                        component={
+                                            hasChildrenOrPages(
+                                                menu
+                                            )
+                                                ? "button"
+                                                : NavLink
+                                        }
+                                        to={
+                                            hasChildrenOrPages(
+                                                menu
+                                            )
+                                                ? undefined
+                                                : `/menu/${menu.slug}`
+                                        }
+                                        end
+                                        onClick={
+                                            hasChildrenOrPages(
+                                                menu
+                                            )
+                                                ? (
+                                                    event
+                                                ) =>
+                                                    handleDropdownOpen(
+                                                        event,
+                                                        menu
+                                                    )
+                                                : undefined
+                                        }
+                                        endIcon={
+                                            hasChildrenOrPages(
+                                                menu
+                                            )
+                                                ? (
+                                                    <KeyboardArrowDownIcon
+                                                        sx={{
+                                                            fontSize:
+                                                                18,
+                                                        }}
+                                                    />
                                                 )
-                                            : undefined
-                                    }
-                                    endIcon={
-                                        hasChildrenOrPages(
-                                            menu
-                                        )
-                                            ? (
-                                                <KeyboardArrowDownIcon
-                                                    sx={{
-                                                        fontSize:
-                                                            18,
-                                                    }}
-                                                />
-                                            )
-                                            : null
-                                    }
-                                    sx={{
-                                        minWidth: 0,
-                                        px: 1.75,
-                                        py: 1,
-                                        borderRadius: 2,
-                                        textTransform: "none",
-                                        fontWeight: 700,
-                                        color: menuActive
-                                            ? "primary.main"
-                                            : "text.secondary",
-                                        bgcolor: menuActive
-                                            ? alpha(
-                                                "#1976d2",
-                                                0.08
-                                            )
-                                            : "transparent",
-
-                                        "&:hover": {
-                                            bgcolor:
-                                                alpha(
-                                                    "#1976d2",
-                                                    0.06
-                                                ),
+                                                : null
+                                        }
+                                        sx={{
+                                            minWidth: 0,
+                                            px: 1.75,
+                                            py: 1,
+                                            borderRadius:
+                                                2,
+                                            textTransform:
+                                                "none",
+                                            fontWeight:
+                                                700,
                                             color:
-                                                "primary.main",
-                                        },
-                                    }}
-                                >
-                                    {menu.title}
-                                </Button>
+                                                menuActive
+                                                    ? "primary.main"
+                                                    : "text.secondary",
+                                            bgcolor:
+                                                menuActive
+                                                    ? alpha(
+                                                        "#1976d2",
+                                                        0.08
+                                                    )
+                                                    : "transparent",
 
-                            );
+                                            "& .MuiButton-endIcon":
+                                                {
+                                                    ml: isArabic
+                                                        ? 0
+                                                        : 0.5,
+                                                    mr: isArabic
+                                                        ? 0.5
+                                                        : 0,
+                                                },
 
-                        })}
+                                            "&:hover": {
+                                                bgcolor:
+                                                    alpha(
+                                                        "#1976d2",
+                                                        0.06
+                                                    ),
+                                                color:
+                                                    "primary.main",
+                                            },
+                                        }}
+                                    >
+                                        {menuTitle}
+                                    </Button>
+
+                                );
+
+                            }
+                        )}
 
                     </Stack>
 
-                    {/* Future language button */}
+                    {/* Language switch */}
 
                     <Button
-                        startIcon={<LanguageIcon />}
+                        startIcon={
+                            <LanguageIcon />
+                        }
                         variant="outlined"
                         size="small"
-                        disabled
+                        onClick={
+                            onLanguageToggle
+                        }
+                        aria-label={
+                            isArabic
+                                ? "Switch to English"
+                                : "التبديل إلى العربية"
+                        }
                         sx={{
                             display: {
                                 xs: "none",
                                 md: "inline-flex",
                             },
-                            ml: 1,
-                            textTransform: "none",
-                            fontWeight: 700,
+
+                            ml: isArabic
+                                ? 0
+                                : 1,
+
+                            mr: isArabic
+                                ? 1
+                                : 0,
+
+                            textTransform:
+                                "none",
+                            fontWeight: 800,
                             borderRadius: 2,
                             px: 1.75,
+                            minWidth: 92,
                             borderColor:
                                 alpha(
                                     "#14213d",
                                     0.12
                                 ),
-                            color: "text.secondary",
+                            color:
+                                "text.secondary",
+
+                            "&:hover": {
+                                borderColor:
+                                    "primary.main",
+                                bgcolor:
+                                    alpha(
+                                        "#1976d2",
+                                        0.06
+                                    ),
+                                color:
+                                    "primary.main",
+                            },
+
+                            "& .MuiButton-startIcon":
+                                {
+                                    ml: isArabic
+                                        ? 0.5
+                                        : -0.5,
+                                    mr: isArabic
+                                        ? -0.5
+                                        : 0.5,
+                                },
                         }}
                     >
-                        EN
+                        {isArabic
+                            ? "English"
+                            : "العربية"}
                     </Button>
 
                     {/* Mobile trigger */}
 
                     <IconButton
                         onClick={onMenuOpen}
+                        aria-label={
+                            isArabic
+                                ? "فتح القائمة"
+                                : "Open navigation"
+                        }
                         sx={{
                             display: {
                                 xs: "inline-flex",
                                 lg: "none",
                             },
-                            ml: 0.5,
+
+                            ml: isArabic
+                                ? 0
+                                : 0.5,
+
+                            mr: isArabic
+                                ? 0.5
+                                : 0,
+
                             width: 42,
                             height: 42,
                             borderRadius: 2,
@@ -420,23 +612,36 @@ const PublicHeader = ({
             <Menu
                 anchorEl={anchorEl}
                 open={dropdownOpen}
-                onClose={handleDropdownClose}
+                onClose={
+                    handleDropdownClose
+                }
                 anchorOrigin={{
                     vertical: "bottom",
-                    horizontal: "left",
+                    horizontal:
+                        isArabic
+                            ? "right"
+                            : "left",
                 }}
                 transformOrigin={{
                     vertical: "top",
-                    horizontal: "left",
+                    horizontal:
+                        isArabic
+                            ? "right"
+                            : "left",
                 }}
                 slotProps={{
                     paper: {
+                        dir: isArabic
+                            ? "rtl"
+                            : "ltr",
+
                         sx: {
                             mt: 1.25,
                             minWidth: 280,
                             maxWidth: 360,
                             borderRadius: 3,
-                            border: "1px solid",
+                            border:
+                                "1px solid",
                             borderColor:
                                 alpha(
                                     "#14213d",
@@ -444,7 +649,12 @@ const PublicHeader = ({
                                 ),
                             boxShadow:
                                 "0 18px 50px rgba(15,23,42,0.14)",
-                            overflow: "hidden",
+                            overflow:
+                                "hidden",
+                            textAlign:
+                                isArabic
+                                    ? "right"
+                                    : "left",
                         },
                     },
                 }}
@@ -462,13 +672,20 @@ const PublicHeader = ({
                         <MenuItem
                             component={Link}
                             to={`/menu/${activeMenu.slug}`}
-                            onClick={handleDropdownClose}
+                            onClick={
+                                handleDropdownClose
+                            }
                             sx={{
                                 borderRadius: 2,
                                 px: 1.5,
                                 py: 1.2,
                                 fontWeight: 800,
-                                color: "primary.main",
+                                color:
+                                    "primary.main",
+                                justifyContent:
+                                    isArabic
+                                        ? "flex-end"
+                                        : "flex-start",
 
                                 "&:hover": {
                                     bgcolor:
@@ -479,12 +696,27 @@ const PublicHeader = ({
                                 },
                             }}
                         >
-                            View all {activeMenu.title}
+                            {isArabic
+                                ? `${viewAllLabel} ${getLocalizedTitle(
+                                    activeMenu,
+                                    language
+                                )}`
+                                : `${viewAllLabel} ${getLocalizedTitle(
+                                    activeMenu,
+                                    language
+                                )}`}
                         </MenuItem>
 
-                        {activeMenu.pages?.length > 0 && (
+                        {activeMenu.pages
+                            ?.length > 0 && (
+
                             <>
-                                <Divider sx={{ my: 0.75 }} />
+
+                                <Divider
+                                    sx={{
+                                        my: 0.75,
+                                    }}
+                                />
 
                                 <Box
                                     sx={{
@@ -493,78 +725,118 @@ const PublicHeader = ({
                                         pb: 0.75,
                                     }}
                                 >
+
                                     <Typography
                                         sx={{
-                                            fontSize: 10.5,
-                                            fontWeight: 800,
-                                            letterSpacing: 1.4,
+                                            fontSize:
+                                                10.5,
+                                            fontWeight:
+                                                800,
+                                            letterSpacing:
+                                                isArabic
+                                                    ? 0
+                                                    : 1.4,
                                             textTransform:
-                                                "uppercase",
+                                                isArabic
+                                                    ? "none"
+                                                    : "uppercase",
                                             color:
                                                 "text.disabled",
+                                            textAlign:
+                                                isArabic
+                                                    ? "right"
+                                                    : "left",
                                         }}
                                     >
-                                        Pages
+                                        {pagesLabel}
                                     </Typography>
+
                                 </Box>
 
                                 {activeMenu.pages.map(
                                     (page) => (
 
                                         <MenuItem
-                                            key={page.id}
-                                            component={Link}
+                                            key={
+                                                page.id
+                                            }
+                                            component={
+                                                Link
+                                            }
                                             to={`/page/${page.slug}`}
                                             onClick={
                                                 handleDropdownClose
                                             }
                                             sx={{
-                                                borderRadius: 2,
+                                                borderRadius:
+                                                    2,
                                                 px: 1.5,
                                                 py: 1.1,
-                                                fontSize: 13.5,
+                                                fontSize:
+                                                    13.5,
+                                                justifyContent:
+                                                    isArabic
+                                                        ? "flex-end"
+                                                        : "flex-start",
 
-                                                "&:hover": {
-                                                    bgcolor:
-                                                        alpha(
-                                                            "#1976d2",
-                                                            0.06
-                                                        ),
-                                                },
+                                                "&:hover":
+                                                    {
+                                                        bgcolor:
+                                                            alpha(
+                                                                "#1976d2",
+                                                                0.06
+                                                            ),
+                                                    },
                                             }}
                                         >
-                                            {page.title}
+                                            {getLocalizedTitle(
+                                                page,
+                                                language
+                                            )}
                                         </MenuItem>
 
                                     )
                                 )}
+
                             </>
+
                         )}
 
                         {activeMenu.children?.map(
                             (child) => (
 
                                 <Box
-                                    key={child.id}
+                                    key={
+                                        child.id
+                                    }
                                     sx={{
                                         mt: 0.5,
                                     }}
                                 >
 
-                                    <Divider sx={{ my: 0.75 }} />
+                                    <Divider
+                                        sx={{
+                                            my: 0.75,
+                                        }}
+                                    />
 
                                     <Box
-                                        component={Link}
+                                        component={
+                                            Link
+                                        }
                                         to={`/menu/${child.slug}`}
                                         onClick={
                                             handleDropdownClose
                                         }
                                         sx={{
-                                            display: "block",
+                                            display:
+                                                "block",
                                             px: 1.5,
                                             py: 0.8,
-                                            textDecoration: "none",
-                                            borderRadius: 2,
+                                            textDecoration:
+                                                "none",
+                                            borderRadius:
+                                                2,
 
                                             "&:hover": {
                                                 bgcolor:
@@ -578,13 +850,22 @@ const PublicHeader = ({
 
                                         <Typography
                                             sx={{
-                                                fontSize: 12,
-                                                fontWeight: 800,
+                                                fontSize:
+                                                    12,
+                                                fontWeight:
+                                                    800,
                                                 color:
                                                     "text.primary",
+                                                textAlign:
+                                                    isArabic
+                                                        ? "right"
+                                                        : "left",
                                             }}
                                         >
-                                            {child.title}
+                                            {getLocalizedTitle(
+                                                child,
+                                                language
+                                            )}
                                         </Typography>
 
                                     </Box>
@@ -593,33 +874,54 @@ const PublicHeader = ({
                                         (page) => (
 
                                             <MenuItem
-                                                key={page.id}
-                                                component={Link}
+                                                key={
+                                                    page.id
+                                                }
+                                                component={
+                                                    Link
+                                                }
                                                 to={`/page/${page.slug}`}
                                                 onClick={
                                                     handleDropdownClose
                                                 }
                                                 sx={{
-                                                    ml: 1,
-                                                    borderRadius: 2,
+                                                    ml: isArabic
+                                                        ? 0
+                                                        : 1,
+
+                                                    mr: isArabic
+                                                        ? 1
+                                                        : 0,
+
+                                                    borderRadius:
+                                                        2,
                                                     px: 1.5,
                                                     py: 1,
-                                                    fontSize: 13,
+                                                    fontSize:
+                                                        13,
                                                     color:
                                                         "text.secondary",
+                                                    justifyContent:
+                                                        isArabic
+                                                            ? "flex-end"
+                                                            : "flex-start",
 
-                                                    "&:hover": {
-                                                        bgcolor:
-                                                            alpha(
-                                                                "#1976d2",
-                                                                0.06
-                                                            ),
-                                                        color:
-                                                            "primary.main",
-                                                    },
+                                                    "&:hover":
+                                                        {
+                                                            bgcolor:
+                                                                alpha(
+                                                                    "#1976d2",
+                                                                    0.06
+                                                                ),
+                                                            color:
+                                                                "primary.main",
+                                                        },
                                                 }}
                                             >
-                                                {page.title}
+                                                {getLocalizedTitle(
+                                                    page,
+                                                    language
+                                                )}
                                             </MenuItem>
 
                                         )
