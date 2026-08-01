@@ -61,7 +61,7 @@ const Header = ({ onMenuClick }) => {
 
         toast.success("Logged out successfully");
 
-        navigate("/login");
+        navigate("/admin/login");
     };
 
     const getInitials = (name) => {
@@ -380,7 +380,7 @@ const Header = ({ onMenuClick }) => {
 
                                 handleMenuClose();
 
-                                navigate("/profile");
+                                navigate("/admin/profile");
 
                             }}
                             sx={{

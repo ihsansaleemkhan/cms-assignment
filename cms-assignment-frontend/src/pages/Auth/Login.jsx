@@ -77,7 +77,7 @@ const Login = () => {
 
             toast.success(`Welcome ${response.user.name}`);
 
-            navigate("/dashboard");
+            navigate("/admin/dashboard");
 
         } catch (error) {
 

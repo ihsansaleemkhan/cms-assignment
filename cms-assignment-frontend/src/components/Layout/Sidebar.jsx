@@ -35,40 +35,40 @@ const menus = [
     {
         text: "Dashboard",
         icon: <Dashboard />,
-        path: "/dashboard",
+        path: "/admin/dashboard",
         permission: "dashboard.view",
     },
 
     {
         text: "Menu",
         icon: <MenuBook />,
-        path: "/menus",
+        path: "/admin/menus",
         permission: "menu.view",
     },
 
     {
         text: "Pages",
         icon: <Description />,
-        path: "/pages",
+        path: "/admin/pages",
         permission: "page.view",
     },
 
     {
         text: "Roles & Permissions",
         icon: <Security />,
-        path: "/roles",
+        path: "/admin/roles",
         permission: "role.view",
     },
     {
         text: "Users",
         icon: <People />,
-        path: "/users",
+        path: "/admin/users",
         permission: "user.view",
     },
     {
         text: "Audit & Trash",
         icon: <DeleteSweep />,
-        path: "/audit-trash",
+        path: "/admin/audit-trash",
         permission: "page.trash.view",
     },
 

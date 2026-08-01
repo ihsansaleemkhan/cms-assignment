@@ -15,25 +15,56 @@ import AdminLayout from "../layouts/AdminLayout";
 import PermissionRoute from "../components/Common/PermissionRoute";
 import Forbidden from "../pages/Common/Forbidden";
 
+import PublicLayout from "../layouts/PublicLayout";
+
+import Home from "../pages/Public/Home";
+import MenuPages from "../pages/Public/MenuPages";
+import PageDetail from "../pages/Public/PageDetail";
+import PublicNotFound from "../pages/Public/PublicNotFound";
+
 const AppRoutes = () => {
     return (
         <Routes>
 
             {/* Default Route */}
             <Route
-                path="/"
+                path="/admin"
                 element={
                     localStorage.getItem("token")
-                        ? <Navigate to="/dashboard" replace />
-                        : <Navigate to="/login" replace />
+                        ? <Navigate to="/admin/dashboard" replace />
+                        : <Navigate to="/admin/login" replace />
                 }
             />
 
             {/* Public Route */}
             <Route
-                path="/login"
+                path="/admin/login"
                 element={<Login />}
             />
+
+            <Route element={<PublicLayout />}>
+
+                <Route
+                    path="/"
+                    element={<Home />}
+                />
+
+                <Route
+                    path="/menu/:slug"
+                    element={<MenuPages />}
+                />
+
+                <Route
+                    path="/page/:slug"
+                    element={<PageDetail />}
+                />
+
+                <Route
+                    path="/not-found"
+                    element={<PublicNotFound />}
+                />
+
+            </Route>
 
             {/* Protected Routes */}
             <Route element={<ProtectedRoute />}>
@@ -41,7 +72,7 @@ const AppRoutes = () => {
                 <Route element={<AdminLayout />}>
 
                     <Route
-                        path="/dashboard"
+                        path="/admin/dashboard"
                         element={
                             <PermissionRoute permission="dashboard.view">
                                 <Dashboard />
@@ -50,7 +81,7 @@ const AppRoutes = () => {
                     />
 
                     <Route
-                        path="/menus"
+                        path="/admin/menus"
                         element={
                             <PermissionRoute permission="menu.view">
                                 <MenuList />
@@ -59,7 +90,7 @@ const AppRoutes = () => {
                     />
 
                     <Route
-                        path="/pages"
+                        path="/admin/pages"
                         element={
                             <PermissionRoute permission="page.view">
                                 <PagesList />
@@ -68,7 +99,7 @@ const AppRoutes = () => {
                     />
 
                     <Route
-                        path="/users"
+                        path="/admin/users"
                         element={
                             <PermissionRoute permission="user.view">
                                 <UserList />
@@ -77,7 +108,7 @@ const AppRoutes = () => {
                     />
 
                     <Route
-                        path="/roles"
+                        path="/admin/roles"
                         element={
                             <PermissionRoute permission="role.view">
                                 <RoleList />
@@ -86,7 +117,7 @@ const AppRoutes = () => {
                     />
 
                     <Route
-                        path="/audit-trash"
+                        path="/admin/audit-trash"
                         element={
                             <PermissionRoute permission="page.trash.view">
                                 <AuditTrashList />
@@ -95,12 +126,12 @@ const AppRoutes = () => {
                     />
 
                     <Route
-                        path="/profile"
+                        path="/admin/profile"
                         element={<Profile />}
                     />
 
                     <Route
-                        path="/403"
+                        path="/admin/403"
                         element={<Forbidden />}
                     />
 
@@ -108,10 +139,10 @@ const AppRoutes = () => {
 
             </Route>
 
-            {/* 404 */}
+            {/* Public 404 */}
             <Route
                 path="*"
-                element={<h1>404 - Page Not Found</h1>}
+                element={<PublicNotFound />}
             />
 
         </Routes>
