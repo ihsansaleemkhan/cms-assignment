@@ -401,13 +401,6 @@ routes/
 └── web.php
 ```
 
-## Remaining Planned Work
-
-The following assignment items should be documented here after implementation:
-
-- Scheduled publishing Artisan command and scheduler configuration
-- Final expanded feature-test coverage
-- Optional mobile client
 
 ## Author
 
