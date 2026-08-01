@@ -343,12 +343,6 @@ npm install
 
 Verify the backend URL and CORS configuration when API requests fail.
 
-## Remaining Planned Work
-
-- Final frontend regression testing
-- Optional React Native mobile application
-- Deployment configuration, if required
-
 ## Author
 
 **Mohomed Ihsan Saleemkhan**  
