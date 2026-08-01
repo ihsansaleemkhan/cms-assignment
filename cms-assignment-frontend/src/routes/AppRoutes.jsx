@@ -6,6 +6,7 @@ import MenuList from "../pages/Menus/MenuList";
 import PagesList from "../pages/Pages/PageList";
 import UserList from "../pages/Users/UserList";
 import RoleList from "../pages/Roles/RoleList";
+import Profile from "../pages/Profile/Profile";
 
 import ProtectedRoute from "../components/Common/ProtectedRoute";
 import AdminLayout from "../layouts/AdminLayout";
@@ -58,6 +59,11 @@ const AppRoutes = () => {
                     <Route
                         path="/roles"
                         element={<RoleList />}
+                    />
+
+                    <Route
+                        path="/profile"
+                        element={<Profile />}
                     />
 
                 </Route>

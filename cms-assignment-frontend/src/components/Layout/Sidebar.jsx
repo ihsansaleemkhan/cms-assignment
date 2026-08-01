@@ -8,6 +8,8 @@ import {
     Divider,
     Typography,
     Tooltip,
+    Box,
+    alpha,
 } from "@mui/material";
 
 import {
@@ -23,8 +25,8 @@ import { NavLink } from "react-router-dom";
 import { useTheme } from "@mui/material/styles";
 import useMediaQuery from "@mui/material/useMediaQuery";
 
-const drawerWidth = 240;
-const collapsedWidth = 70;
+const drawerWidth = 250;
+const collapsedWidth = 72;
 
 const menus = [
     {
@@ -66,31 +68,45 @@ const Sidebar = ({
         theme.breakpoints.down("md")
     );
 
+    // Smooth transition config for the drawer resizing
+    const transitionConfig = theme.transitions.create(['width', 'margin'], {
+        easing: theme.transitions.easing.sharp,
+        duration: isMobile ? 0 : theme.transitions.duration.enteringScreen,
+    });
+
     const drawerContent = (
 
         <>
 
-            <Toolbar
+            {/* Spacer to push content below the fixed AppBar */}
+            <Toolbar sx={{ justifyContent: "center" }} />
+
+            {/* Section Label */}
+            <Box
                 sx={{
-                    justifyContent: "center",
+                    px: collapsed && !isMobile ? 0 : 2.5,
+                    pt: 2,
+                    pb: 1.5,
                 }}
             >
                 <Typography
-                    variant="h6"
-                    fontWeight="bold"
+                    variant="overline"
+                    sx={{
+                        fontSize: 10.5,
+                        fontWeight: 700,
+                        color: "text.disabled",
+                        letterSpacing: 1.5,
+                        display: collapsed && !isMobile ? "none" : "block",
+                    }}
                 >
-                    {collapsed && !isMobile
-                        ? "CMS"
-                        : "CMS Admin"}
+                    MAIN MENU
                 </Typography>
-            </Toolbar>
-
-            <Divider />
+            </Box>
 
             <List
                 sx={{
-                    mt: 2,
-                    px: 1,
+                    px: 1.5,
+                    pb: 3,
                 }}
             >
 
@@ -104,6 +120,8 @@ const Sidebar = ({
                                 : ""
                         }
                         placement="right"
+                        arrow
+                        disableHoverListener={!collapsed || isMobile}
                     >
 
                         <ListItemButton
@@ -115,24 +133,43 @@ const Sidebar = ({
                                 }
                             }}
                             sx={{
-                                mb: 1,
+                                mb: 0.5,
+                                py: 1.2,
+                                px: 1.5,
                                 borderRadius: 2,
+                                color: "text.secondary",
+                                borderLeft: "3px solid transparent",
+                                transition: "all 0.2s ease-in-out",
+                                position: "relative",
 
+                                // Active State
                                 "&.active": {
-                                    bgcolor: "primary.main",
-                                    color: "#fff",
-
+                                    bgcolor: alpha("#1976d2", 0.08),
+                                    color: "primary.main",
+                                    borderLeft: "3px solid",
+                                    borderColor: "primary.main",
+                                    
+                                    "& .MuiListItemText-primary": {
+                                        fontWeight: 700,
+                                    },
                                     "& .MuiListItemIcon-root": {
-                                        color: "#fff",
+                                        color: "primary.main",
                                     },
                                 },
 
+                                // Hover State
                                 "&:hover": {
-                                    bgcolor: "primary.light",
-                                    color: "#fff",
+                                    bgcolor: "#f5f7fb",
+                                    color: "text.primary",
+                                    
+                                    // Keep active styling on hover if it's active
+                                    "&.active": {
+                                        bgcolor: alpha("#1976d2", 0.12),
+                                        color: "primary.main",
+                                    },
 
                                     "& .MuiListItemIcon-root": {
-                                        color: "#fff",
+                                        color: "inherit",
                                     },
                                 },
                             }}
@@ -141,8 +178,18 @@ const Sidebar = ({
                             <ListItemIcon
                                 sx={{
                                     minWidth: 0,
-                                    mr: collapsed && !isMobile ? "auto" : 2,
+                                    mr: collapsed && !isMobile ? 0 : 2,
                                     justifyContent: "center",
+                                    
+                                    "& .MuiSvgIcon-root": {
+                                        fontSize: 22,
+                                        transition: "transform 0.2s",
+                                    },
+
+                                    // Slight icon bump on hover
+                                    ".MuiListItemButton-root:hover & .MuiSvgIcon-root": {
+                                        transform: "scale(1.1)",
+                                    }
                                 }}
                             >
                                 {menu.icon}
@@ -152,6 +199,17 @@ const Sidebar = ({
 
                                 <ListItemText
                                     primary={menu.text}
+                                    primaryTypographyProps={{
+                                        fontSize: 14,
+                                        fontWeight: 500,
+                                        lineHeight: 1.2,
+                                    }}
+                                    sx={{
+                                        margin: 0,
+                                        whiteSpace: "nowrap",
+                                        overflow: "hidden",
+                                        textOverflow: "ellipsis",
+                                    }}
                                 />
 
                             )}
@@ -175,7 +233,7 @@ const Sidebar = ({
             open={isMobile ? mobileOpen : true}
             onClose={handleDrawerToggle}
             ModalProps={{
-                keepMounted: true,
+                keepMounted: true, // Better open performance on mobile.
             }}
             sx={{
                 width: isMobile
@@ -183,25 +241,22 @@ const Sidebar = ({
                     : collapsed
                         ? collapsedWidth
                         : drawerWidth,
-
                 flexShrink: 0,
+                transition: transitionConfig,
 
                 "& .MuiDrawer-paper": {
-
                     width: isMobile
                         ? drawerWidth
                         : collapsed
                             ? collapsedWidth
                             : drawerWidth,
-
-                    transition: "0.3s",
-
+                    transition: transitionConfig,
                     overflowX: "hidden",
-
                     boxSizing: "border-box",
-
-                    borderRight:
-                        "1px solid #e5e7eb",
+                    borderRight: "1px solid #e5e7eb",
+                    bgcolor: "#ffffff",
+                    // Very subtle inner shadow on the right edge
+                    boxShadow: "inset -1px 0 0 rgba(0,0,0,0.04)",
                 },
             }}
         >
