@@ -13,6 +13,7 @@ use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
 use Illuminate\Http\Request;
 use OpenApi\Attributes as OA;
+use App\Models\Menu;
 
 class PageController extends Controller implements HasMiddleware
 {
@@ -23,6 +24,9 @@ class PageController extends Controller implements HasMiddleware
             new Middleware('permission:page.create', only: ['store']),
             new Middleware('permission:page.edit', only: ['update']),
             new Middleware('permission:page.delete', only: ['destroy']),
+            new Middleware('permission:page.trash.view',only: ['trash']),
+            new Middleware('permission:page.restore',only: ['restore']),
+            new Middleware('permission:page.force_delete',only: ['forceDelete']),
         ];
     }
     
@@ -297,7 +301,7 @@ class PageController extends Controller implements HasMiddleware
     )]
     #[OA\Response(
         response: 200,
-        description: "Page deleted successfully"
+        description: "Page moved to trash successfully."
     )]
     #[OA\Response(
         response: 404,
@@ -310,6 +314,162 @@ class PageController extends Controller implements HasMiddleware
         return response()->json([
             'success' => true,
             'message' => 'Page moved to trash successfully.',
+        ]);
+    }
+
+
+    // GET /pages/trash
+    #[OA\Get(
+        path: "/pages/trash",
+        summary: "List deleted pages",
+        description: "Returns paginated soft-deleted pages.",
+        operationId: "listDeletedPages",
+        tags: ["Page Trash"],
+        security: [["sanctum" => []]]
+    )]
+    #[OA\Parameter(
+        name: "search",
+        in: "query",
+        required: false,
+        schema: new OA\Schema(type: "string")
+    )]
+    #[OA\Response(
+        response: 200,
+        description: "Deleted pages retrieved successfully"
+    )]
+    #[OA\Response(
+        response: 403,
+        description: "Forbidden"
+    )]
+    public function trash(Request $request)
+    {
+        $query = Page::onlyTrashed()->with([
+            'menu',
+            'creator:id,name,email',
+            'updater:id,name,email',
+            'deleter:id,name,email',
+        ]);
+
+        if ($request->filled('search')) {
+            $query->where(
+                'title',
+                'like',
+                '%' . $request->search . '%'
+            );
+        }
+
+        if ($request->filled('menu_id')) {
+            $query->where('menu_id', $request->menu_id);
+        }
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        $pages = $query
+            ->latest('deleted_at')
+            ->paginate(10)
+            ->withQueryString();
+
+        return PageResource::collection($pages);
+    }
+
+
+    // POST /pages/{id}/restore
+    #[OA\Post(
+    path: "/pages/{id}/restore",
+    summary: "Restore deleted page",
+    description: "Restores a soft-deleted page.",
+    operationId: "restoreDeletedPage",
+    tags: ["Page Trash"],
+    security: [["sanctum" => []]]
+    )]
+    #[OA\Parameter(
+        name: "id",
+        in: "path",
+        required: true,
+        schema: new OA\Schema(type: "integer")
+    )]
+    #[OA\Response(
+        response: 200,
+        description: "Page restored successfully"
+    )]
+    #[OA\Response(
+        response: 404,
+        description: "Deleted page not found"
+    )]
+    #[OA\Response(
+        response: 422,
+        description: "Related menu must be restored first"
+    )]
+    public function restore(int $id)
+    {
+        $page = Page::onlyTrashed()->findOrFail($id);
+
+        $menu = Menu::withTrashed()->find($page->menu_id);
+
+        if (!$menu || $menu->trashed()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Restore the related menu before restoring this page.',
+            ], 422);
+        }
+
+        $page->restore();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Page restored successfully.',
+            'data' => new PageResource(
+                $page->fresh()->load([
+                    'menu',
+                    'creator:id,name,email',
+                    'updater:id,name,email',
+                    'deleter:id,name,email',
+                ])
+            ),
+        ]);
+    }
+
+    // DELETE /pages/{id}/force-delete
+    #[OA\Delete(
+        path: "/pages/{id}/force-delete",
+        summary: "Permanently delete page",
+        description: "Permanently deletes a soft-deleted page and its cover image.",
+        operationId: "forceDeletePage",
+        tags: ["Page Trash"],
+        security: [["sanctum" => []]]
+    )]
+    #[OA\Parameter(
+        name: "id",
+        in: "path",
+        required: true,
+        schema: new OA\Schema(type: "integer")
+    )]
+    #[OA\Response(
+        response: 200,
+        description: "Page permanently deleted successfully"
+    )]
+    #[OA\Response(
+        response: 404,
+        description: "Deleted page not found"
+    )]
+    public function forceDelete(int $id)
+    {
+        $page = Page::onlyTrashed()->findOrFail($id);
+
+        if (
+            $page->cover_image &&
+            Storage::disk('public')->exists($page->cover_image)
+        ) {
+            Storage::disk('public')->delete($page->cover_image);
+        }
+
+        $page->forceDelete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Page permanently deleted successfully.',
         ]);
     }
 }

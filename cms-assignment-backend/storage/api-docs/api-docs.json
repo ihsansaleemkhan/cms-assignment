@@ -312,7 +312,7 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Menu deleted successfully"
+                        "description": "Menu moved to trash successfully"
                     },
                     "404": {
                         "description": "Menu not found"
@@ -389,6 +389,102 @@
                 "responses": {
                     "200": {
                         "description": "Menu order updated successfully"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/menus/trash": {
+            "get": {
+                "tags": [
+                    "Menu Trash"
+                ],
+                "summary": "List deleted menus",
+                "description": "Returns paginated soft-deleted menus.",
+                "operationId": "listDeletedMenus",
+                "parameters": [
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Deleted menus retrieved successfully"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/menus/{id}/restore": {
+            "post": {
+                "tags": [
+                    "Menu Trash"
+                ],
+                "summary": "Restore deleted menu",
+                "description": "Restores a soft-deleted menu.",
+                "operationId": "restoreDeletedMenu",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Menu restored successfully"
+                    },
+                    "422": {
+                        "description": "Parent menu must be restored first"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/menus/{id}/force-delete": {
+            "delete": {
+                "tags": [
+                    "Menu Trash"
+                ],
+                "summary": "Permanently delete menu",
+                "description": "Permanently deletes an empty soft-deleted menu.",
+                "operationId": "forceDeleteMenu",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Menu permanently deleted successfully"
+                    },
+                    "422": {
+                        "description": "Menu still has related pages or child menus"
                     }
                 },
                 "security": [
@@ -646,10 +742,112 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Page deleted successfully"
+                        "description": "Page moved to trash successfully."
                     },
                     "404": {
                         "description": "Page not found"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/pages/trash": {
+            "get": {
+                "tags": [
+                    "Page Trash"
+                ],
+                "summary": "List deleted pages",
+                "description": "Returns paginated soft-deleted pages.",
+                "operationId": "listDeletedPages",
+                "parameters": [
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Deleted pages retrieved successfully"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/pages/{id}/restore": {
+            "post": {
+                "tags": [
+                    "Page Trash"
+                ],
+                "summary": "Restore deleted page",
+                "description": "Restores a soft-deleted page.",
+                "operationId": "restoreDeletedPage",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Page restored successfully"
+                    },
+                    "404": {
+                        "description": "Deleted page not found"
+                    },
+                    "422": {
+                        "description": "Related menu must be restored first"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/pages/{id}/force-delete": {
+            "delete": {
+                "tags": [
+                    "Page Trash"
+                ],
+                "summary": "Permanently delete page",
+                "description": "Permanently deletes a soft-deleted page and its cover image.",
+                "operationId": "forceDeletePage",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Page permanently deleted successfully"
+                    },
+                    "404": {
+                        "description": "Deleted page not found"
                     }
                 },
                 "security": [
@@ -1151,8 +1349,16 @@
             "description": "Menus"
         },
         {
+            "name": "Menu Trash",
+            "description": "Menu Trash"
+        },
+        {
             "name": "Pages",
             "description": "Pages"
+        },
+        {
+            "name": "Page Trash",
+            "description": "Page Trash"
         },
         {
             "name": "Roles",

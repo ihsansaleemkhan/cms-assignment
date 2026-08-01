@@ -14,11 +14,12 @@ class RolePermissionSeeder extends Seeder
      */
     public function run(): void
     {
-        app()[PermissionRegistrar::class]->forgetCachedPermissions();
+        app(PermissionRegistrar::class)
+            ->forgetCachedPermissions();
 
         /*
         |--------------------------------------------------------------------------
-        | Dashboard Permissions
+        | Permissions
         |--------------------------------------------------------------------------
         */
 
@@ -33,11 +34,21 @@ class RolePermissionSeeder extends Seeder
             'menu.edit',
             'menu.delete',
 
+            // Menu Trash
+            'menu.trash.view',
+            'menu.restore',
+            'menu.force_delete',
+
             // Page
             'page.view',
             'page.create',
             'page.edit',
             'page.delete',
+
+            // Page Trash
+            'page.trash.view',
+            'page.restore',
+            'page.force_delete',
 
             // User
             'user.view',
@@ -53,7 +64,6 @@ class RolePermissionSeeder extends Seeder
         ];
 
         foreach ($permissions as $permission) {
-
             Permission::firstOrCreate([
                 'name' => $permission,
                 'guard_name' => 'web',
@@ -76,7 +86,7 @@ class RolePermissionSeeder extends Seeder
             'guard_name' => 'web',
         ]);
 
-        $Moderator = Role::firstOrCreate([
+        $moderator = Role::firstOrCreate([
             'name' => 'Moderator',
             'guard_name' => 'web',
         ]);
@@ -93,7 +103,7 @@ class RolePermissionSeeder extends Seeder
         */
 
         $systemAdmin->syncPermissions(
-            Permission::all()
+            Permission::where('guard_name', 'web')->get()
         );
 
         /*
@@ -103,7 +113,6 @@ class RolePermissionSeeder extends Seeder
         */
 
         $contentManager->syncPermissions([
-
             'dashboard.view',
 
             'menu.view',
@@ -127,8 +136,7 @@ class RolePermissionSeeder extends Seeder
         |--------------------------------------------------------------------------
         */
 
-        $Moderator->syncPermissions([
-
+        $moderator->syncPermissions([
             'dashboard.view',
 
             'menu.view',
@@ -136,7 +144,6 @@ class RolePermissionSeeder extends Seeder
             'page.view',
             'page.create',
             'page.edit',
-
         ]);
 
         /*
@@ -146,13 +153,14 @@ class RolePermissionSeeder extends Seeder
         */
 
         $viewer->syncPermissions([
-
             'dashboard.view',
 
             'menu.view',
 
             'page.view',
-
         ]);
+
+        app(PermissionRegistrar::class)
+            ->forgetCachedPermissions();
     }
 }

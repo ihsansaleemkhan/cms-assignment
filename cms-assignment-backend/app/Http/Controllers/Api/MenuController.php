@@ -12,6 +12,7 @@ use Illuminate\Routing\Controllers\Middleware;
 use OpenApi\Attributes as OA;
 use App\Http\Requests\ReorderMenuRequest;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Http\Request;
 
 class MenuController extends Controller implements HasMiddleware
 {
@@ -22,12 +23,36 @@ class MenuController extends Controller implements HasMiddleware
                 'permission:menu.view',
                 only: ['index', 'show', 'all']
             ),
-            new Middleware('permission:menu.create', only: ['store']),
+
+            new Middleware(
+                'permission:menu.create',
+                only: ['store']
+            ),
+
             new Middleware(
                 'permission:menu.edit',
                 only: ['update', 'reorder']
             ),
-            new Middleware('permission:menu.delete', only: ['destroy']),
+
+            new Middleware(
+                'permission:menu.delete',
+                only: ['destroy']
+            ),
+
+            new Middleware(
+                'permission:menu.trash.view',
+                only: ['trash']
+            ),
+
+            new Middleware(
+                'permission:menu.restore',
+                only: ['restore']
+            ),
+
+            new Middleware(
+                'permission:menu.force_delete',
+                only: ['forceDelete']
+            ),
         ];
     }
 
@@ -249,7 +274,7 @@ class MenuController extends Controller implements HasMiddleware
     )]
     #[OA\Response(
         response: 200,
-        description: "Menu deleted successfully"
+        description: "Menu moved to trash successfully"
     )]
     #[OA\Response(
         response: 404,
@@ -373,4 +398,157 @@ class MenuController extends Controller implements HasMiddleware
 
         }
     }
+
+    //GET /menus/trash
+    #[OA\Get(
+    path: "/menus/trash",
+    summary: "List deleted menus",
+    description: "Returns paginated soft-deleted menus.",
+    operationId: "listDeletedMenus",
+    tags: ["Menu Trash"],
+    security: [["sanctum" => []]]
+    )]
+    #[OA\Parameter(
+        name: "search",
+        in: "query",
+        required: false,
+        schema: new OA\Schema(type: "string")
+    )]
+    #[OA\Response(
+        response: 200,
+        description: "Deleted menus retrieved successfully"
+    )]
+    public function trash(Request $request)
+    {
+        $query = Menu::onlyTrashed()->with([
+            'creator:id,name,email',
+            'updater:id,name,email',
+            'deleter:id,name,email',
+        ]);
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+
+            $query->where(function ($builder) use ($search) {
+                $builder
+                    ->where('title', 'like', '%' . $search . '%')
+                    ->orWhere('slug', 'like', '%' . $search . '%');
+            });
+        }
+
+        $menus = $query
+            ->latest('deleted_at')
+            ->paginate(10)
+            ->withQueryString();
+
+        return MenuResource::collection($menus);
+    }
+
+    //POST /menus/{id}/restore
+    #[OA\Post(
+    path: "/menus/{id}/restore",
+    summary: "Restore deleted menu",
+    description: "Restores a soft-deleted menu.",
+    operationId: "restoreDeletedMenu",
+    tags: ["Menu Trash"],
+    security: [["sanctum" => []]]
+    )]
+    #[OA\Parameter(
+        name: "id",
+        in: "path",
+        required: true,
+        schema: new OA\Schema(type: "integer")
+    )]
+    #[OA\Response(
+        response: 200,
+        description: "Menu restored successfully"
+    )]
+    #[OA\Response(
+        response: 422,
+        description: "Parent menu must be restored first"
+    )]
+    public function restore(int $id)
+    {
+        $menu = Menu::onlyTrashed()->findOrFail($id);
+
+        if ($menu->parent_id) {
+            $parent = Menu::withTrashed()->find($menu->parent_id);
+
+            if (!$parent || $parent->trashed()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Restore the parent menu before restoring this menu.',
+                ], 422);
+            }
+        }
+
+        $menu->restore();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Menu restored successfully.',
+            'data' => new MenuResource(
+                $menu->fresh()->load([
+                    'children',
+                    'creator:id,name,email',
+                    'updater:id,name,email',
+                    'deleter:id,name,email',
+                ])
+            ),
+        ]);
+    }
+
+    //Delete /menus/{id}/force-delete
+    #[OA\Delete(
+    path: "/menus/{id}/force-delete",
+    summary: "Permanently delete menu",
+    description: "Permanently deletes an empty soft-deleted menu.",
+    operationId: "forceDeleteMenu",
+    tags: ["Menu Trash"],
+    security: [["sanctum" => []]]
+    )]
+    #[OA\Parameter(
+        name: "id",
+        in: "path",
+        required: true,
+        schema: new OA\Schema(type: "integer")
+    )]
+    #[OA\Response(
+        response: 200,
+        description: "Menu permanently deleted successfully"
+    )]
+    #[OA\Response(
+        response: 422,
+        description: "Menu still has related pages or child menus"
+    )]
+    public function forceDelete(int $id)
+    {
+        $menu = Menu::onlyTrashed()->findOrFail($id);
+
+        $hasPages = $menu
+            ->pages()
+            ->withTrashed()
+            ->exists();
+
+        $hasChildren = $menu
+            ->children()
+            ->withTrashed()
+            ->exists();
+
+        if ($hasPages || $hasChildren) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Permanently delete or move all related pages and child menus first.',
+            ], 422);
+        }
+
+        $menu->forceDelete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Menu permanently deleted successfully.',
+        ]);
+    }
 }
+
+
