@@ -1,0 +1,27 @@
+import { Link, Stack, useLocalSearchParams } from 'expo-router';
+import { useCallback, useEffect, useState } from 'react';
+import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { getPublicPages, Page } from '@/lib/api';
+import { localizedTitle } from '@/lib/localization';
+import { useLanguage } from '@/providers/language-provider';
+
+function ResultCard({ page }: { page: Page }) {
+  const { isArabic } = useLanguage();
+  return <Link href={{ pathname: '/page/[slug]', params: { slug: page.slug } } as never} asChild><Pressable style={({ pressed }) => [styles.card, pressed && styles.pressed]}><Text style={[styles.cardTitle, isArabic && styles.rtlText]}>{localizedTitle(page, isArabic)}</Text><Text style={[styles.cardAction, isArabic && styles.rtlText]}>{isArabic ? '‹ افتح الصفحة' : 'Open page  ›'}</Text></Pressable></Link>;
+}
+
+export default function MenuScreen() {
+  const { id, title, titleAr } = useLocalSearchParams<{ id: string; title?: string; titleAr?: string }>();
+  const menuId = Number(id);
+  const [search, setSearch] = useState(''); const [query, setQuery] = useState('');
+  const [pages, setPages] = useState<Page[]>([]); const [page, setPage] = useState(1); const [lastPage, setLastPage] = useState(1);
+  const [loading, setLoading] = useState(true); const [error, setError] = useState('');
+  const { isArabic } = useLanguage();
+  const menuTitle = isArabic ? titleAr || title || 'المحتوى المنشور' : title || titleAr || 'Published content';
+  const load = useCallback(async () => { setLoading(true); setError(''); try { const response = await getPublicPages({ menuId, page, search: query }); setPages(response.data); setLastPage(response.meta?.last_page ?? 1); } catch (cause) { setError(cause instanceof Error ? cause.message : 'Unable to load this menu.'); } finally { setLoading(false); } }, [menuId, page, query]);
+  useEffect(() => { load(); }, [load]);
+  function submitSearch() { setPage(1); setQuery(search); }
+  return <SafeAreaView edges={['bottom']} style={styles.safe}><Stack.Screen options={{ title: menuTitle }} /><FlatList data={pages} keyExtractor={(item) => String(item.id)} contentContainerStyle={styles.list} ListHeaderComponent={<><Text style={[styles.heading, isArabic && styles.rtlText]}>{menuTitle}</Text><Text style={[styles.description, isArabic && styles.rtlText]}>{isArabic ? 'تصفح الصفحات المنشورة في قائمة نظام إدارة المحتوى.' : 'Browse published pages from this CMS menu.'}</Text><View style={[styles.searchRow, isArabic && styles.rtl]}><TextInput value={search} onChangeText={setSearch} placeholder={isArabic ? 'ابحث في الصفحات...' : 'Search pages...'} style={[styles.search, isArabic && styles.rtlText]} returnKeyType="search" onSubmitEditing={submitSearch} /><Pressable style={styles.searchButton} onPress={submitSearch}><Text style={styles.searchText}>{isArabic ? 'بحث' : 'Search'}</Text></Pressable></View>{loading ? <ActivityIndicator style={styles.spinner} color="#1778c5" /> : error ? <Text style={[styles.error, isArabic && styles.rtlText]}>{error}</Text> : null}</>} renderItem={({ item }) => <ResultCard page={item} />} ListEmptyComponent={!loading && !error ? <Text style={[styles.empty, isArabic && styles.rtlText]}>{isArabic ? 'لا توجد صفحات منشورة تطابق بحثك.' : 'No published pages match your search.'}</Text> : null} ListFooterComponent={lastPage > 1 && !loading ? <View style={[styles.pagination, isArabic && styles.rtl]}><Pressable disabled={page === 1} onPress={() => setPage((value) => value - 1)}><Text style={[styles.pageControl, page === 1 && styles.disabled]}>{isArabic ? 'التالي' : 'Previous'}</Text></Pressable><Text style={styles.pageNumber}>{isArabic ? `الصفحة ${page} من ${lastPage}` : `Page ${page} of ${lastPage}`}</Text><Pressable disabled={page === lastPage} onPress={() => setPage((value) => value + 1)}><Text style={[styles.pageControl, page === lastPage && styles.disabled]}>{isArabic ? 'السابق' : 'Next'}</Text></Pressable></View> : null} /></SafeAreaView>;
+}
+const styles = StyleSheet.create({ safe: { flex: 1, backgroundColor: '#f6f8fb' }, list: { padding: 18, paddingBottom: 42 }, heading: { fontSize: 28, color: '#10233f', fontWeight: '800' }, description: { color: '#667085', lineHeight: 20, marginTop: 7 }, searchRow: { flexDirection: 'row', marginTop: 22, marginBottom: 12, gap: 8 }, search: { flex: 1, backgroundColor: '#fff', borderWidth: 1, borderColor: '#d0d5dd', borderRadius: 10, paddingHorizontal: 12, fontSize: 16 }, searchButton: { borderRadius: 10, backgroundColor: '#1778c5', paddingHorizontal: 16, justifyContent: 'center' }, searchText: { color: '#fff', fontWeight: '800' }, spinner: { marginVertical: 28 }, error: { color: '#b42318', marginVertical: 18 }, empty: { textAlign: 'center', color: '#667085', marginVertical: 35 }, card: { backgroundColor: '#fff', padding: 16, borderRadius: 12, marginTop: 10, borderWidth: 1, borderColor: '#eaecf0' }, cardTitle: { color: '#10233f', fontSize: 17, fontWeight: '700' }, cardAction: { color: '#1778c5', fontWeight: '700', marginTop: 9 }, pressed: { opacity: .7 }, pagination: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 25 }, pageControl: { color: '#1778c5', fontWeight: '800' }, pageNumber: { color: '#667085' }, disabled: { opacity: .4 }, rtl: { flexDirection: 'row-reverse' }, rtlText: { textAlign: 'right', writingDirection: 'rtl' } });
